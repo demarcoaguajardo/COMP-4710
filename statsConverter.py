@@ -1,5 +1,6 @@
 '''
-Python script that converts the stats from a CSV file into a dictionary.
+Python script that converts the stats from a CSV file into meaningful
+pitcher and batter stats.
 
 Author: Demarco Guajardo
 '''
