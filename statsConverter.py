@@ -151,7 +151,8 @@ def print_stats(players):
 
         OBP = (H + BB + HBP) / (AB + BB + HBP + SF) if (AB + BB + HBP + SF) > 0 else 0 # On Base Percentage
         SLG = TB / AB if AB > 0 else 0 # Slugging Percentage
-        ISO = SLG - AVG if AB > 0 else 0 # Isolated Power
+        OPS = (OBP + SLG) # On Base Plus Slugging Percentage
+        ISO = SLG - AVG # Isolated Power
         BABIP = (H - HR) / (AB - K - HR + SF) if (AB - K - HR + SF) > 0 else 0 # Batting Average on Balls in Play
 
         wOBA = ((wOBA_WEIGHTS['BB'] * BB) +
@@ -165,11 +166,11 @@ def print_stats(players):
    
         # Display Stats
         print(f"Player: {player}")
-        print(f"PA: {PA}, AB: {AB}, H: {H}")
+        print(f"PA: {PA}, AB: {AB}, H: {H}, TB: {TB}")
         print(f"1B: {OneB}, 2B: {TwoB}, 3B: {ThreeB}, HR: {HR}")
         print(f"RBI: {RBI}, BB: {BB}, K: {K}, HBP: {HBP}, SF: {SF}, SH: {SH}, GDP: {GDP}")
         print(f"AVG: {AVG:.2f}, BB%: {BBpercent:.2f}%, K%: {Kpercent:.2f}%")
-        print(f"OBP: {OBP:.2f}, SLG: {SLG:.2f}, ISO: {ISO:.2f}, BABIP: {BABIP:.2f}, wOBA: {wOBA:.2f}")
+        print(f"OBP: {OBP:.2f}, SLG: {SLG:.2f}, OPS: {OPS:.2f}, ISO: {ISO:.2f}, BABIP: {BABIP:.2f}, wOBA: {wOBA:.2f}")
         print()
 
 if __name__ == "__main__":
