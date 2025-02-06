@@ -55,6 +55,8 @@ def calculate_stats(data):
         inning_half = row['Top/Bottom']
         pa_of_inning = row['PAofInning']
         outs_on_play = int(row['OutsOnPlay']) if 'OutsOnPlay' in row else 0
+       # exit_speed = float(row['ExitSpeed']) if 'ExitSpeed' in row else 0
+       # launch_angle = float(row['Angle']) if 'Angle' in row else 0
 
         # Create a unique identifier for each plate appearance
         pa_identifier = (batter_name, inning, inning_half, pa_of_inning)
@@ -134,12 +136,13 @@ def print_stats(players):
         SH = stats['SH'] # Sacrifice Hits
         SF = stats['SF'] # Sacrifice Flies
         TB = stats['TB'] # Total Bases
-        OneB = stats['1B'] # Singles
-        TwoB = stats['2B'] # Doubles
-        ThreeB = stats['3B'] # Triples
+        oneB = stats['1B'] # Singles
+        twoB = stats['2B'] # Doubles
+        threeB = stats['3B'] # Triples
         HR = stats['HR'] # Home Runs
         RBI = stats['RBI'] # Runs Batted In
         GDP = stats['GDP'] # Ground into Double Play
+        
 
         # Additional Stats
 
@@ -157,9 +160,9 @@ def print_stats(players):
 
         wOBA = ((wOBA_WEIGHTS['BB'] * BB) +
                 (wOBA_WEIGHTS['HBP'] * HBP) +
-                (wOBA_WEIGHTS['1B'] * OneB) +
-                (wOBA_WEIGHTS['2B'] * TwoB) +
-                (wOBA_WEIGHTS['3B'] * ThreeB) +
+                (wOBA_WEIGHTS['1B'] * oneB) +
+                (wOBA_WEIGHTS['2B'] * twoB) +
+                (wOBA_WEIGHTS['3B'] * threeB) +
                 (wOBA_WEIGHTS['HR'] * HR)) / (
                     AB + BB + HBP + SF
                 ) if (AB + BB + HBP + SF) > 0 else 0 # Weighted On Base Average
@@ -167,7 +170,7 @@ def print_stats(players):
         # Display Stats
         print(f"Player: {player}")
         print(f"PA: {PA}, AB: {AB}, H: {H}, TB: {TB}")
-        print(f"1B: {OneB}, 2B: {TwoB}, 3B: {ThreeB}, HR: {HR}")
+        print(f"1B: {oneB}, 2B: {twoB}, 3B: {threeB}, HR: {HR}")
         print(f"RBI: {RBI}, BB: {BB}, K: {K}, HBP: {HBP}, SF: {SF}, SH: {SH}, GDP: {GDP}")
         print(f"AVG: {AVG:.2f}, BB%: {BBpercent:.2f}%, K%: {Kpercent:.2f}%")
         print(f"OBP: {OBP:.2f}, SLG: {SLG:.2f}, OPS: {OPS:.2f}, ISO: {ISO:.2f}, BABIP: {BABIP:.2f}, wOBA: {wOBA:.2f}")
