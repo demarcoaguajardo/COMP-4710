@@ -58,6 +58,44 @@ def calculate_stats(data):
        # exit_speed = float(row['ExitSpeed']) if 'ExitSpeed' in row else 0
        # launch_angle = float(row['Angle']) if 'Angle' in row else 0
 
+       # Safely convert exit speed and launch angle to float
+        try:
+            exit_speed = float(row['ExitSpeed']) if 'ExitSpeed' in row else 0
+        except ValueError:
+            exit_speed = 0
+
+        try:
+            launch_angle = float(row['Angle']) if 'Angle' in row else 0
+        except ValueError:
+            launch_angle = 0
+
+        # Initialize lists to store exit speeds and angles for each batter
+        if batter_name not in players:
+            players[batter_name] = {
+                'ExitSpeeds': [],
+                'Angles': [],
+                'PA': 0,
+                '1B': 0,
+                '2B': 0,
+                '3B': 0,
+                'HR': 0,
+                'H': 0,
+                'TB': 0,
+                'K': 0,
+                'BB': 0,
+                'HBP': 0,
+                'SH': 0,
+                'SF': 0,
+                'AB': 0,
+                'RBI': 0,
+                'GDP': 0,
+             }
+            
+        if exit_speed != 0:
+            players[batter_name]['ExitSpeeds'].append(exit_speed)
+        if launch_angle != 0:
+            players[batter_name]['Angles'].append(launch_angle)
+
         # Create a unique identifier for each plate appearance
         pa_identifier = (batter_name, inning, inning_half, pa_of_inning)
 
@@ -120,6 +158,17 @@ def calculate_stats(data):
         if play_result == 'Out' and hit_type == 'GroundBall' and outs_on_play == 2:
             players[batter_name]['GDP'] += 1 # Ground into Double Play
 
+        # Calculate Average Exit Velocity and Average Launch Angle for each player
+        for player in players:
+            exit_speeds = players[player]['ExitSpeeds']
+            angles = players[player]['Angles']
+            
+            avg_exit_velocity = sum(exit_speeds) / len(exit_speeds) if exit_speeds else 0
+            avg_launch_angle = sum(angles) / len(angles) if angles else 0
+            
+            players[player]['AvgExitVelocity'] = avg_exit_velocity
+            players[player]['AvgLaunchAngle'] = avg_launch_angle
+
     return players
 
 def print_stats(players):
@@ -174,6 +223,7 @@ def print_stats(players):
         print(f"RBI: {RBI}, BB: {BB}, K: {K}, HBP: {HBP}, SF: {SF}, SH: {SH}, GDP: {GDP}")
         print(f"AVG: {AVG:.2f}, BB%: {BBpercent:.2f}%, K%: {Kpercent:.2f}%")
         print(f"OBP: {OBP:.2f}, SLG: {SLG:.2f}, OPS: {OPS:.2f}, ISO: {ISO:.2f}, BABIP: {BABIP:.2f}, wOBA: {wOBA:.2f}")
+        print(f"Avg Exit Velocity: {stats['AvgExitVelocity']:.2f} MPH, Avg Launch Angle: {stats['AvgLaunchAngle']:.2f} degrees")
         print()
 
 if __name__ == "__main__":
