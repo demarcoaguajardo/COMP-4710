@@ -67,7 +67,7 @@ def calculate_stats(data):
         except ValueError:
             launch_angle = 0
 
-        # Initialize lists to store exit speeds and angles for each batter
+        # Initialize stats for each batter
         if batter_name not in players:
             players[batter_name] = {
                 'ExitSpeeds': [],
@@ -88,13 +88,16 @@ def calculate_stats(data):
                 'RBI': 0,
                 'GDP': 0,
              }
-            
+        # Append exit speed and launch angle to the player's list to get avgs.
         if exit_speed != 0:
             players[batter_name]['ExitSpeeds'].append(exit_speed)
         if launch_angle != 0:
             players[batter_name]['Angles'].append(launch_angle)
 
-        # Create a unique identifier for each plate appearance
+        # Initialize stats for each pitcher
+        # TO DO: Initialize pitcher stats
+
+        # Create a unique identifier for each batter's plate appearance
         pa_identifier = (batter_name, inning, inning_half, pa_of_inning)
 
         # Check if this is a new plate appearance
@@ -169,10 +172,11 @@ def calculate_stats(data):
 
     return players
 
+# Function that prints all Stats
 def print_stats(players):
     for player, stats in players.items():
 
-        # Simple Stats 
+        # ----- Simple Hitting Stats ----- #
 
         PA = stats['PA'] # Plate Appearances
         AB = stats['AB'] # At Bats
@@ -214,7 +218,7 @@ def print_stats(players):
                     AB + BB + HBP + SF
                 ) if (AB + BB + HBP + SF) > 0 else 0 # Weighted On Base Average
    
-        # Display Stats
+        # --------------- Display Hitting Stats ---------------#
         print(f"Player: {player}")
         print(f"PA: {PA}, AB: {AB}, H: {H}, TB: {TB}")
         print(f"1B: {oneB}, 2B: {twoB}, 3B: {threeB}, HR: {HR}")
@@ -224,6 +228,13 @@ def print_stats(players):
         print(f"Avg Exit Velocity: {stats['AvgExitVelocity']:.2f} MPH, Avg Launch Angle: {stats['AvgLaunchAngle']:.2f} degrees")
         print()
 
+        # ----- Simple Pitching Stats ----- #
+        # TO DO: Add pitching stats
+
+        # --------------- Display Pitching Stats --------------- #
+        # TO DO: Print pitching stats
+
+# -------------------- MAIN FUNCTION -------------------- #
 if __name__ == "__main__":
     file_path = input("Enter the path to the CSV file: ")
     
