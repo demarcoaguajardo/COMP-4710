@@ -55,8 +55,6 @@ def calculate_stats(data):
         inning_half = row['Top/Bottom']
         pa_of_inning = row['PAofInning']
         outs_on_play = int(row['OutsOnPlay']) if 'OutsOnPlay' in row else 0
-       # exit_speed = float(row['ExitSpeed']) if 'ExitSpeed' in row else 0
-       # launch_angle = float(row['Angle']) if 'Angle' in row else 0
 
        # Safely convert exit speed and launch angle to float
         try:
