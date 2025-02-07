@@ -40,6 +40,7 @@ def calculate_stats(data):
 
     for row in data:
         # Safely access required columns (use .get() for missing columns)
+        game_id = row.get('gameid', '').strip()
         batter_name = row.get('batter', '').strip()
         batter_team = row.get('batterteam', '').strip()  # Get player team
         play_result = row.get('playresult', '').strip()
@@ -75,7 +76,7 @@ def calculate_stats(data):
             players[batter_name]['Angles'].append(launch_angle)
 
         # Unique plate appearance tracking
-        pa_identifier = (batter_name, inning, inning_half, pa_of_inning)
+        pa_identifier = (game_id, batter_name, inning, inning_half, pa_of_inning)
         if pa_identifier not in plate_appearances:
             plate_appearances.add(pa_identifier)
             players[batter_name]['PA'] += 1

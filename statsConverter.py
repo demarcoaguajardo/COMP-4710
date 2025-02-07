@@ -38,6 +38,7 @@ def calculate_stats(data):
 
     # Iterate through the data
     for row in data:
+        game_id = row['GameID']
         pitcher_name = row['Pitcher']
         pitcher_id = row['PitcherId']
         batter_name = row['Batter']
@@ -98,7 +99,7 @@ def calculate_stats(data):
         # TO DO: Initialize pitcher stats
 
         # Create a unique identifier for each batter's plate appearance
-        pa_identifier = (batter_name, inning, inning_half, pa_of_inning)
+        pa_identifier = (game_id, batter_name, inning, inning_half, pa_of_inning)
 
         # Check if this is a new plate appearance
         if pa_identifier not in plate_appearances:
