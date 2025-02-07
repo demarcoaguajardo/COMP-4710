@@ -167,6 +167,10 @@ def write_stats_to_csv(players, output_file):
         for player, stats in players.items():
             # Remove unwanted fields
             cleaned_stats = {k: v for k, v in stats.items() if k not in ['ExitSpeeds', 'Angles']}
+            # Format decimal values to two decimal places
+            for key in ['AVG', 'BB%', 'K%', 'OBP', 'SLG', 'OPS', 'ISO', 'BABIP', 'wOBA', 'AvgExitVelocity', 'AvgLaunchAngle']:
+                if key in cleaned_stats:
+                    cleaned_stats[key] = f"{cleaned_stats[key]:.2f}"
             writer.writerow({'Player': player, 'Team': cleaned_stats['Team'], **cleaned_stats})
 
 if __name__ == "__main__":
