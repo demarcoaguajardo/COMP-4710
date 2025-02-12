@@ -34,7 +34,7 @@ def read_csv_directory(directory_path):
     return all_data
 
 # Function to calculate batter statistics
-def calculate_stats(data):
+def calculate_hitting_stats(data):
     batters = defaultdict(lambda: defaultdict(int))
     plate_appearances = set()
 
@@ -179,7 +179,7 @@ if __name__ == "__main__":
 
     data = read_csv_directory(directory_path)
     if data:
-        batters = calculate_stats(data)
+        batters = calculate_hitting_stats(data)
         write_stats_to_csv(batters, output_file)
         print(f"Stats saved to {output_file}")
     else:

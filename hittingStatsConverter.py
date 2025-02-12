@@ -1,6 +1,8 @@
 '''
+hittingStatsConverter.py
+
 Python script that converts the stats from a CSV file into meaningful
-pitcher and batter stats.
+batter stats.
 
 Author: Demarco Guajardo
 '''
@@ -32,7 +34,7 @@ def read_csv(file_path):
         print(f"File not found: {file_path}")
         return None
 
-def calculate_stats(data):
+def calculate_hitting_stats(data):
     batters = defaultdict(lambda: defaultdict(int))
     plate_appearances = set()
 
@@ -94,9 +96,6 @@ def calculate_stats(data):
             batters[batter_name]['ExitSpeeds'].append(exit_speed)
         if launch_angle != 0:
             batters[batter_name]['Angles'].append(launch_angle)
-
-        # Initialize stats for each pitcher
-        # TO DO: Initialize pitcher stats
 
         # Create a unique identifier for each batter's plate appearance
         pa_identifier = (game_id, batter_name, inning, inning_half, pa_of_inning)
@@ -173,8 +172,8 @@ def calculate_stats(data):
 
     return batters
 
-# Function that prints all Stats
-def print_stats(batters):
+# Function that prints hitting stats
+def print_hitting_stats(batters):
     for batter, stats in batters.items():
 
         # ----- Simple Hitting Stats ----- #
@@ -229,12 +228,6 @@ def print_stats(batters):
         print(f"Avg Exit Velocity: {stats['AvgExitVelocity']:.2f} MPH, Avg Launch Angle: {stats['AvgLaunchAngle']:.2f} degrees")
         print()
 
-        # ----- Simple Pitching Stats ----- #
-        # TO DO: Add pitching stats
-
-        # --------------- Display Pitching Stats --------------- #
-        # TO DO: Print pitching stats
-
 # -------------------- MAIN FUNCTION -------------------- #
 if __name__ == "__main__":
     file_path = input("Enter the path to the CSV file: ")
@@ -245,7 +238,7 @@ if __name__ == "__main__":
         print("File found successfully! Opening now...")
         print()
         
-        batters = calculate_stats(data)
-        print_stats(batters)
+        batters = calculate_hitting_stats(data)
+        print_hitting_stats(batters)
     else:
         print("Failed to read the CSV file.")
