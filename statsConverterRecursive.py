@@ -171,6 +171,13 @@ def write_stats_to_csv(batters, output_file):
             for key in ['AVG', 'BB%', 'K%', 'OBP', 'SLG', 'OPS', 'ISO', 'BABIP', 'wOBA', 'AvgExitVelocity', 'AvgLaunchAngle']:
                 if key in cleaned_stats:
                     cleaned_stats[key] = f"{cleaned_stats[key]:.2f}"
+
+            # Add "%" to BB% and K%
+            if 'BB%' in cleaned_stats:
+                cleaned_stats['BB%'] = f"{float(cleaned_stats['BB%']):.2f}%"
+            if 'K%' in cleaned_stats:
+                cleaned_stats['K%'] = f"{float(cleaned_stats['K%']):.2f}%"
+
             writer.writerow({'Player': batter, 'Team': cleaned_stats['Team'], **cleaned_stats})
 
 if __name__ == "__main__":
