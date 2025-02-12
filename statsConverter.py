@@ -33,7 +33,7 @@ def read_csv(file_path):
         return None
 
 def calculate_stats(data):
-    players = defaultdict(lambda: defaultdict(int))
+    batters = defaultdict(lambda: defaultdict(int))
     plate_appearances = set()
 
     # Iterate through the data
@@ -69,8 +69,8 @@ def calculate_stats(data):
             launch_angle = 0
 
         # Initialize stats for each batter
-        if batter_name not in players:
-            players[batter_name] = {
+        if batter_name not in batters:
+            batters[batter_name] = {
                 'ExitSpeeds': [],
                 'Angles': [],
                 'PA': 0,
@@ -89,11 +89,11 @@ def calculate_stats(data):
                 'RBI': 0,
                 'GDP': 0,
              }
-        # Append exit speed and launch angle to the player's list to get avgs.
+        # Append exit speed and launch angle to the batter's list to get avgs.
         if exit_speed != 0:
-            players[batter_name]['ExitSpeeds'].append(exit_speed)
+            batters[batter_name]['ExitSpeeds'].append(exit_speed)
         if launch_angle != 0:
-            players[batter_name]['Angles'].append(launch_angle)
+            batters[batter_name]['Angles'].append(launch_angle)
 
         # Initialize stats for each pitcher
         # TO DO: Initialize pitcher stats
@@ -104,78 +104,78 @@ def calculate_stats(data):
         # Check if this is a new plate appearance
         if pa_identifier not in plate_appearances:
             plate_appearances.add(pa_identifier)
-            players[batter_name]['PA'] += 1
+            batters[batter_name]['PA'] += 1
 
         # Plays and correlated stats
         if play_result == 'Single':
-            players[batter_name]['1B'] += 1 # Single
-            players[batter_name]['H'] += 1 # Hit
-            players[batter_name]['TB'] += 1 # Total Bases
+            batters[batter_name]['1B'] += 1 # Single
+            batters[batter_name]['H'] += 1 # Hit
+            batters[batter_name]['TB'] += 1 # Total Bases
         elif play_result == 'Double':
-            players[batter_name]['2B'] += 1 # Double
-            players[batter_name]['H'] += 1
-            players[batter_name]['TB'] += 2
+            batters[batter_name]['2B'] += 1 # Double
+            batters[batter_name]['H'] += 1
+            batters[batter_name]['TB'] += 2
         elif play_result == 'Triple':
-            players[batter_name]['3B'] += 1 # Triple
-            players[batter_name]['H'] += 1
-            players[batter_name]['TB'] += 3
+            batters[batter_name]['3B'] += 1 # Triple
+            batters[batter_name]['H'] += 1
+            batters[batter_name]['TB'] += 3
         elif play_result == 'HomeRun':
-            players[batter_name]['HR'] += 1 # Home Run
-            players[batter_name]['H'] += 1 
-            players[batter_name]['TB'] += 4 
+            batters[batter_name]['HR'] += 1 # Home Run
+            batters[batter_name]['H'] += 1 
+            batters[batter_name]['TB'] += 4 
         elif play_result == 'Sacrifice':
             if hit_type == 'Bunt':
-                players[batter_name]['SH'] += 1
+                batters[batter_name]['SH'] += 1
             elif hit_type in ['FlyBall', 'Popup']: 
-                players[batter_name]['SF'] += 1
+                batters[batter_name]['SF'] += 1
 
         if korbb == 'Strikeout':
-            players[batter_name]['K'] += 1 # Strikeout
-            players[batter_name]['AB'] += 1 # Strikeout counts as AB
+            batters[batter_name]['K'] += 1 # Strikeout
+            batters[batter_name]['AB'] += 1 # Strikeout counts as AB
         elif korbb == 'Walk':
-            players[batter_name]['BB'] += 1 # Walk
+            batters[batter_name]['BB'] += 1 # Walk
 
         if pitch_call == 'HitByPitch':
-            players[batter_name]['HBP'] += 1 # Hit By Pitch
+            batters[batter_name]['HBP'] += 1 # Hit By Pitch
         
         # Increment AB based on definition
         # AB = Batter reaches base via fielder's choice, hit, or error,
         # or non-sacrifice out.
         if play_result in ['Single', 'Double', 'Triple', 'HomeRun', 'Error',
                      'FieldersChoice', 'Out'] and play_result != 'Sacrifice':
-            players[batter_name]['AB'] += 1
+            batters[batter_name]['AB'] += 1
 
         # Increment RBI based on the definition
         # RBI = Result of PA is run scored, excluding errors and ground double plays
         if play_result not in ['Error', 'FieldersChoice'] and not (play_result == 'Out' and hit_type == 'GroundBall' and outs_on_play == 2):
-            players[batter_name]['RBI'] += runs_scored
+            batters[batter_name]['RBI'] += runs_scored
         elif play_result == 'Sacrifice':
-            players[batter_name]['RBI'] += runs_scored # Sacrifice fly or hit
+            batters[batter_name]['RBI'] += runs_scored # Sacrifice fly or hit
         if korbb == 'Walk' and runs_scored > 0:
-            players[batter_name]['RBI'] += runs_scored # Bases-loaded walk
+            batters[batter_name]['RBI'] += runs_scored # Bases-loaded walk
         if pitch_call == 'HitByPitch' and runs_scored > 0:
-            players[batter_name]['RBI'] += runs_scored # Bases-loaded hit by pitch
+            batters[batter_name]['RBI'] += runs_scored # Bases-loaded hit by pitch
 
         # Check for Ground into Double Play (GDP)
         if play_result == 'Out' and hit_type == 'GroundBall' and outs_on_play == 2:
-            players[batter_name]['GDP'] += 1 # Ground into Double Play
+            batters[batter_name]['GDP'] += 1 # Ground into Double Play
 
-        # Calculate Average Exit Velocity and Average Launch Angle for each player
-        for player in players:
-            exit_speeds = players[player]['ExitSpeeds']
-            angles = players[player]['Angles']
+        # Calculate Average Exit Velocity and Average Launch Angle for each batter
+        for batter in batters:
+            exit_speeds = batters[batter]['ExitSpeeds']
+            angles = batters[batter]['Angles']
             
             avg_exit_velocity = sum(exit_speeds) / len(exit_speeds) if exit_speeds else 0
             avg_launch_angle = sum(angles) / len(angles) if angles else 0
             
-            players[player]['AvgExitVelocity'] = avg_exit_velocity
-            players[player]['AvgLaunchAngle'] = avg_launch_angle
+            batters[batter]['AvgExitVelocity'] = avg_exit_velocity
+            batters[batter]['AvgLaunchAngle'] = avg_launch_angle
 
-    return players
+    return batters
 
 # Function that prints all Stats
-def print_stats(players):
-    for player, stats in players.items():
+def print_stats(batters):
+    for batter, stats in batters.items():
 
         # ----- Simple Hitting Stats ----- #
 
@@ -220,7 +220,7 @@ def print_stats(players):
                 ) if (AB + BB + HBP + SF) > 0 else 0 # Weighted On Base Average
    
         # --------------- Display Hitting Stats ---------------#
-        print(f"Player: {player}")
+        print(f"Player: {batter}")
         print(f"PA: {PA}, AB: {AB}, H: {H}, TB: {TB}")
         print(f"1B: {oneB}, 2B: {twoB}, 3B: {threeB}, HR: {HR}")
         print(f"RBI: {RBI}, BB: {BB}, K: {K}, HBP: {HBP}, SF: {SF}, SH: {SH}, GDP: {GDP}")
@@ -245,7 +245,7 @@ if __name__ == "__main__":
         print("File found successfully! Opening now...")
         print()
         
-        players = calculate_stats(data)
-        print_stats(players)
+        batters = calculate_stats(data)
+        print_stats(batters)
     else:
         print("Failed to read the CSV file.")

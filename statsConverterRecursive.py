@@ -33,16 +33,16 @@ def read_csv_directory(directory_path):
     
     return all_data
 
-# Function to calculate player statistics
+# Function to calculate batter statistics
 def calculate_stats(data):
-    players = defaultdict(lambda: defaultdict(int))
+    batters = defaultdict(lambda: defaultdict(int))
     plate_appearances = set()
 
     for row in data:
         # Safely access required columns (use .get() for missing columns)
         game_id = row.get('gameid', '').strip()
         batter_name = row.get('batter', '').strip()
-        batter_team = row.get('batterteam', '').strip()  # Get player team
+        batter_team = row.get('batterteam', '').strip()  # Get batter team
         play_result = row.get('playresult', '').strip()
         hit_type = row.get('taggedhittype', '').strip()
         korbb = row.get('korbb', '').strip()
@@ -63,72 +63,72 @@ def calculate_stats(data):
         except ValueError:
             launch_angle = 0
 
-        if batter_name not in players:
-            players[batter_name] = {
+        if batter_name not in batters:
+            batters[batter_name] = {
                 'ExitSpeeds': [], 'Angles': [], 'PA': 0, '1B': 0, '2B': 0, '3B': 0,
                 'HR': 0, 'H': 0, 'TB': 0, 'K': 0, 'BB': 0, 'HBP': 0, 'SH': 0,
                 'SF': 0, 'AB': 0, 'RBI': 0, 'GDP': 0, 'Team': batter_team  # Store the team name
             }
 
         if exit_speed:
-            players[batter_name]['ExitSpeeds'].append(exit_speed)
+            batters[batter_name]['ExitSpeeds'].append(exit_speed)
         if launch_angle:
-            players[batter_name]['Angles'].append(launch_angle)
+            batters[batter_name]['Angles'].append(launch_angle)
 
         # Unique plate appearance tracking
         pa_identifier = (game_id, batter_name, inning, inning_half, pa_of_inning)
         if pa_identifier not in plate_appearances:
             plate_appearances.add(pa_identifier)
-            players[batter_name]['PA'] += 1
+            batters[batter_name]['PA'] += 1
 
         # Explicitly handle play results
         if play_result == 'Single':
-            players[batter_name]['1B'] += 1
-            players[batter_name]['H'] += 1
-            players[batter_name]['TB'] += 1
+            batters[batter_name]['1B'] += 1
+            batters[batter_name]['H'] += 1
+            batters[batter_name]['TB'] += 1
         elif play_result == 'Double':
-            players[batter_name]['2B'] += 1
-            players[batter_name]['H'] += 1
-            players[batter_name]['TB'] += 2
+            batters[batter_name]['2B'] += 1
+            batters[batter_name]['H'] += 1
+            batters[batter_name]['TB'] += 2
         elif play_result == 'Triple':
-            players[batter_name]['3B'] += 1
-            players[batter_name]['H'] += 1
-            players[batter_name]['TB'] += 3
+            batters[batter_name]['3B'] += 1
+            batters[batter_name]['H'] += 1
+            batters[batter_name]['TB'] += 3
         elif play_result == 'HomeRun':
-            players[batter_name]['HR'] += 1
-            players[batter_name]['H'] += 1
-            players[batter_name]['TB'] += 4
+            batters[batter_name]['HR'] += 1
+            batters[batter_name]['H'] += 1
+            batters[batter_name]['TB'] += 4
 
         if play_result == 'Sacrifice':
-            players[batter_name]['SH' if hit_type == 'Bunt' else 'SF'] += 1
+            batters[batter_name]['SH' if hit_type == 'Bunt' else 'SF'] += 1
 
         if korbb == 'Strikeout':
-            players[batter_name]['K'] += 1
-            players[batter_name]['AB'] += 1
+            batters[batter_name]['K'] += 1
+            batters[batter_name]['AB'] += 1
         elif korbb == 'Walk':
-            players[batter_name]['BB'] += 1
+            batters[batter_name]['BB'] += 1
 
         if pitch_call == 'HitByPitch':
-            players[batter_name]['HBP'] += 1
+            batters[batter_name]['HBP'] += 1
 
         if play_result in ['Single', 'Double', 'Triple', 'HomeRun', 'Error', 'FieldersChoice', 'Out'] and play_result != 'Sacrifice':
-            players[batter_name]['AB'] += 1
+            batters[batter_name]['AB'] += 1
 
         if play_result not in ['Error', 'FieldersChoice'] and not (play_result == 'Out' and hit_type == 'GroundBall' and outs_on_play == 2):
-            players[batter_name]['RBI'] += runs_scored
+            batters[batter_name]['RBI'] += runs_scored
         elif play_result == 'Sacrifice':
-            players[batter_name]['RBI'] += runs_scored
+            batters[batter_name]['RBI'] += runs_scored
         if korbb == 'Walk' and runs_scored > 0:
-            players[batter_name]['RBI'] += runs_scored
+            batters[batter_name]['RBI'] += runs_scored
         if pitch_call == 'HitByPitch' and runs_scored > 0:
-            players[batter_name]['RBI'] += runs_scored
+            batters[batter_name]['RBI'] += runs_scored
 
         if play_result == 'Out' and hit_type == 'GroundBall' and outs_on_play == 2:
-            players[batter_name]['GDP'] += 1
+            batters[batter_name]['GDP'] += 1
 
     # Compute missing advanced stats and averages
-    for player in players:
-        stats = players[player]
+    for batter in batters:
+        stats = batters[batter]
         exit_speeds = stats['ExitSpeeds']
         angles = stats['Angles']
 
@@ -152,10 +152,10 @@ def calculate_stats(data):
         stats['BABIP'] = (H - HR) / (AB - K - HR + SF) if (AB - K - HR + SF) > 0 else 0
         stats['wOBA'] = sum(wOBA_WEIGHTS[stat] * stats[stat] for stat in wOBA_WEIGHTS if stat in stats) / (AB + BB + HBP + SF) if (AB + BB + HBP + SF) > 0 else 0
 
-    return players
+    return batters
 
 # Function to write stats to a new CSV file
-def write_stats_to_csv(players, output_file):
+def write_stats_to_csv(batters, output_file):
     fieldnames = ['Player', 'Team', 'PA', 'AB', 'H', 'TB', '1B', '2B', '3B', 'HR', 'RBI', 
                   'BB', 'K', 'HBP', 'SF', 'SH', 'GDP', 'AVG', 'BB%', 'K%', 
                   'OBP', 'SLG', 'OPS', 'ISO', 'BABIP', 'wOBA', 'AvgExitVelocity', 'AvgLaunchAngle']
@@ -164,14 +164,14 @@ def write_stats_to_csv(players, output_file):
         writer = csv.DictWriter(file, fieldnames=fieldnames)
         writer.writeheader()
 
-        for player, stats in players.items():
+        for batter, stats in batters.items():
             # Remove unwanted fields
             cleaned_stats = {k: v for k, v in stats.items() if k not in ['ExitSpeeds', 'Angles']}
             # Format decimal values to two decimal places
             for key in ['AVG', 'BB%', 'K%', 'OBP', 'SLG', 'OPS', 'ISO', 'BABIP', 'wOBA', 'AvgExitVelocity', 'AvgLaunchAngle']:
                 if key in cleaned_stats:
                     cleaned_stats[key] = f"{cleaned_stats[key]:.2f}"
-            writer.writerow({'Player': player, 'Team': cleaned_stats['Team'], **cleaned_stats})
+            writer.writerow({'Player': batter, 'Team': cleaned_stats['Team'], **cleaned_stats})
 
 if __name__ == "__main__":
     directory_path = input("Enter the directory path: ")
@@ -179,8 +179,8 @@ if __name__ == "__main__":
 
     data = read_csv_directory(directory_path)
     if data:
-        players = calculate_stats(data)
-        write_stats_to_csv(players, output_file)
+        batters = calculate_stats(data)
+        write_stats_to_csv(batters, output_file)
         print(f"Stats saved to {output_file}")
     else:
         print("No CSV files found.")
