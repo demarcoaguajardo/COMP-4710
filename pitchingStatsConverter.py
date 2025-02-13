@@ -190,6 +190,7 @@ def assign_wins_losses(pitchers, team_runs, pitcher_teams):
         if set(teams) == {'AUB_TIG', 'AUB_PRC'}:
             return
 
+        # Assign wins and losses to pitchers
         if runs_team1 > runs_team2:
             winning_team = team1
             losing_team = team2
@@ -198,7 +199,6 @@ def assign_wins_losses(pitchers, team_runs, pitcher_teams):
             losing_team = team1
         else:
             return # Tie = No wins or losses assigned
-        
         for pitcher, team in pitcher_teams.items():
             if team == winning_team:
                 pitchers[pitcher]['Wins'] += 1
