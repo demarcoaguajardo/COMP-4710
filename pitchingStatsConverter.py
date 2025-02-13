@@ -27,6 +27,8 @@ def calculate_pitching_stats(data):
     team_runs = defaultdict(int) # Tracks runs scored by each team
     pitcher_teams = defaultdict(str) # Tracks team of each pitcher
     current_batter = defaultdict(str) # Tracks unique batters faced by each pitcher
+    first_three_pitches = defaultdict(lambda: defaultdict(list)) # Tracks first three pitches of each PA
+    pitches_in_at_bat = defaultdict(lambda: defaultdict(int)) # Tracks pitches thrown in each at-bat
 
     # Iterate through the data
     for row in data:
@@ -43,6 +45,7 @@ def calculate_pitching_stats(data):
         strikes = int(row['Strikes']) if 'Strikes' in row else 0
         balls = int(row['Balls']) if 'Balls' in row else 0
         tagged_hit_type = row['TaggedHitType']
+        play_result = row['PlayResult']
 
         # Initialize stats for each pitcher
         if pitcher_name not in pitchers:
@@ -62,7 +65,11 @@ def calculate_pitching_stats(data):
                 'Strikes': 0,
                 'Balls': 0,
                 'HitBatters': 0,
-                'FoulsAfter2Strikes': 0
+                'FoulsAfter2Strikes': 0,
+                'First2of3StrikesOrInPlay': 0,
+                'AtBatEfficiency': 0,
+                'HomeRuns': 0,
+                'FIP': 0
             }
 
         # Track earned runs for pitchers 
@@ -114,19 +121,60 @@ def calculate_pitching_stats(data):
         elif pitch_call == 'HitByPitch':
             pitchers[pitcher_name]['HitBatters'] += 1
 
+        # Track Home Runs
+        if play_result == 'HomeRun':
+            pitchers[pitcher_name]['HomeRuns'] += 1
+
+        # Track the first three pitches of each plate appearance
+        if pitch_of_pa == 1:
+            first_three_pitches[pitcher_name][batter_name] = [] # Initialize the list for new PA
+        if pitch_of_pa <= 3: 
+            first_three_pitches[pitcher_name][batter_name].append((pitch_call, strikes))
+        # Check if the first two pitches are strikes or in play
+        if pitch_of_pa == 3:
+            first_three = first_three_pitches[pitcher_name][batter_name]
+            strike_count = 0
+            for pitch, strikes in first_three:
+                if pitch in ['StrikeCalled', 'StrikeSwinging', 'InPlay']:
+                    strike_count += 1
+                elif pitch == 'FoulBall':
+                    if strikes < 2 or (strikes == 2 and tagged_hit_type == 'Bunt'):
+                        strike_count += 1
+            if strike_count >= 2:
+                pitchers[pitcher_name]['First2of3StrikesOrInPlay'] += 1
+            first_three_pitches[pitcher_name][batter_name] = [] # Reset first three pitches
+
         # Track runs scored by each team
         team_runs[batter_team] += runs_scored
-
         # Track team of each pitcher
         pitcher_teams[pitcher_name] = pitcher_team
+
+        # Track number of pitches in each at-bat
+        pitches_in_at_bat[pitcher_name][batter_name] += 1
+        # Check if the at-bat is completed
+        if play_result in ['Single', 'Double', 'Triple', 'HomeRun', 'Error', 'FieldersChoice', 'Out'] and play_result != 'Sacrifice':
+            if pitch_of_pa <= 4:
+                pitchers[pitcher_name]['AtBatEfficiency'] += 1
+            pitches_in_at_bat[pitcher_name][batter_name] = 0 # Reset for the next at-bat
 
     # Calculate stats for each pitcher
     for pitcher in pitchers:
         outs_recorded = pitchers[pitcher]['OutsRecorded'] # Outs Recorded
         earned_runs = pitchers[pitcher]['EarnedRuns'] # Earned Runs
         innings_pitched = outs_recorded / 3 # Innings Pitched
-        pitchers[pitcher]['InningsPitched'] = innings_pitched
+        pitchers[pitcher]['InningsPitched'] = innings_pitched 
         pitchers[pitcher]['ERA'] = (9 * earned_runs / innings_pitched) if innings_pitched > 0 else 0 # ERA
+        home_runs = pitchers[pitcher]['HomeRuns'] # Home Runs
+        walks = pitchers[pitcher]['Walks'] # Walks
+        hit_by_pitches = pitchers[pitcher]['HitBatters'] # Hit Batters
+        strikeouts = pitchers[pitcher]['Strikeouts']
+        inn_pitched = pitchers[pitcher]['InningsPitched']
+        FIP_constant = 3.17 # This is a constant used from the 2024 MLB season
+        # Calculate FIP
+        if inn_pitched > 0:
+            pitchers[pitcher]['FIP'] = ((13 * home_runs) + (3 * (walks + hit_by_pitches)) - (2 * strikeouts)) / inn_pitched + FIP_constant
+        else:
+            pitchers[pitcher]['FIP'] = 0
 
     return pitchers, team_runs, pitcher_teams
 
@@ -137,6 +185,10 @@ def assign_wins_losses(pitchers, team_runs, pitcher_teams):
         team1, team2 = teams
         runs_team1 = team_runs[team1]
         runs_team2 = team_runs[team2]
+
+        # Skip practice games between AUB_TIG and AUB_PRC
+        if set(teams) == {'AUB_TIG', 'AUB_PRC'}:
+            return
 
         if runs_team1 > runs_team2:
             winning_team = team1
@@ -160,7 +212,7 @@ def print_pitching_stats(pitchers):
         # ----- Simple Pitching Stats ----- #
 
         earnedRuns = stats['EarnedRuns'] # Earned Runs
-        inningsPitched = stats['InningsPitched'] # Innings Pitched
+        IP = stats['InningsPitched'] # Innings Pitched
         ERA = stats['ERA'] # Earned Run Average
         W = stats['Wins'] # Wins
         L = stats['Losses'] # Losses
@@ -172,8 +224,12 @@ def print_pitching_stats(pitchers):
         TP = stats['TotalPitches'] # Total Pitches
         Strikes = stats['Strikes'] # Strikes
         Balls = stats['Balls'] # Balls
-        HBP = stats['HitBatters']
-        FoulsAfter2Strikes = stats['FoulsAfter2Strikes']
+        HBP = stats['HitBatters'] # Number of Batters Hit
+        HR = stats['HomeRuns'] # Home Runs
+        FoulsAfter2Strikes = stats['FoulsAfter2Strikes'] # Fouls After 2 Strikes
+        First2of3StrikesOrInPlay = stats['First2of3StrikesOrInPlay'] # First 2 of 3 Strikes or In Play
+        AtBatEfficiency = stats['AtBatEfficiency'] # At Bats in Less Than 4 Pitches
+        FIP = stats['FIP'] # Fielding Independent Pitching
 
         # Additional Stats
 
@@ -183,20 +239,24 @@ def print_pitching_stats(pitchers):
         fBallPercent = fBalls / TBF * 100 if TBF > 0 else 0 # First Pitch Ball Percentage
         strikePercent = Strikes / TP * 100 if TP > 0 else 0 # Strike Percentage
         ballPercent = Balls / TP * 100 if TP > 0 else 0 # Ball Percentage
+        AtBatEfficiencyPercent = AtBatEfficiency / TBF * 100 if TBF > 0 else 0 # At Bat Efficiency Percentage
 
         # --------------- Display Pitching Stats --------------- #
 
         print(f"Pitcher: {pitcher}")
         print(f"W-L: {W}-{L}")
-        print(f"Earned Runs: {earnedRuns}, Innings Pitched: {inningsPitched:.2f}, TBF: {TBF}")
+        print(f"Earned Runs: {earnedRuns}, Innings Pitched: {IP:.2f}, TBF: {TBF}")
         print(f"ERA: {ERA:.2f}")
         print(f"Total Pitches: {TP}")
         print(f"Strikes: {Strikes}, Balls: {Balls}, Foul Balls (0-2 Count): {FoulsAfter2Strikes}, Batters Hit By Pitch: {HBP}")
         print(f"Strike%: {strikePercent:.2f}%, Ball%: {ballPercent:.2f}%")
         print(f"F-Strikes: {fStrikes}, F-Balls: {fBalls}")
         print(f"F-Strike%: {fStrikePercent:.2f}%, F-Ball%: {fBallPercent:.2f}%")
-        print(f"K: {K}, BB: {BB}")
+        print(f"First 2 of 3 Strikes or In Play: {First2of3StrikesOrInPlay}")
+        print(f"At Bats in Less Than 4 Pitches: {AtBatEfficiency}, At Bat Efficiency(%): {AtBatEfficiencyPercent:.2f}%")
+        print(f"K: {K}, BB: {BB}, Home Runs: {HR}")
         print(f"K%: {Kpercent:.2f}%, BB%: {BBpercent:.2f}%")
+        print(f"FIP: {FIP:.2f}")
         print()
 
 # -------------------- MAIN FUNCTION -------------------- #
