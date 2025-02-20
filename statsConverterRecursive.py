@@ -13,6 +13,83 @@ wOBA_WEIGHTS = {
     'HR': 2.05
 }
 
+# Define the names of the team constants
+# Currently organized in old conference alignments
+team_names = {
+    #ACC
+    'LOU_CAR' : 'Louisville',
+    'NOT_IRI' : 'Notre Dame',
+    'WAK_DEA' : 'Wake Forest',
+    'FLO_SEM' : 'Florida State',
+    'NOR_WOL' : 'NC State',
+    'CLE_TIG' : 'Clemson',
+    'BOC_EAG' : 'Boston College',
+    'MIA_HUR' : 'Miami (FL)',
+    'VIR_TEC' : 'Virginia Tech',
+    'VIR_CAV' : 'Virginia',
+    'NOR_TAR' : 'North Carolina',
+    'GIT_YEL' : 'Georgia Tech',
+    'PIT_PAN' : 'Pittsburgh',
+    'DUK_BLU' : 'Duke',
+
+    #Big12
+    'TCU_HFG' : 'TCU',
+    'OKL_COW' : 'Oklahoma State',
+    'OKL_SOO' : 'Oklahoma',
+    'TEX_RAI' : 'Texas Tech',
+    'TEX_LON' : 'Texas',
+    'WES_MOU' : 'West Virginia',
+    'KAN_WIL' : 'Kansas State',
+    'BAY_BEA' : 'Baylor',
+    'KAN_JAY' : 'Kansas',
+
+    #Big10
+    'MAR_TER' : 'Maryland',
+    'RUT_SCA' : 'Rutgers',
+    'IOW_HAW' : 'Iowa',
+    'ILL_ILL' : 'Illinois',
+    'MIC_WOL' : 'Michigan',
+    'PEN_NIT' : 'Penn State',
+    'PUR_BOI' : 'Purdue',
+    'NOR_CAT' : 'Northwestern',
+    'IU' : 'Indiana',
+    'NEB' : 'Nebraska',
+    'OSU_BUC' : 'Ohio State',
+    'MIC_SPA' : 'Michigan State',
+    'MIN_GOL' : 'Minnesota',
+
+    #PAC-12
+    'STA_CAR' : 'Stanford',
+    'OSU_BEA' : 'Oregon State',
+    'UCLA' : 'UCLA',
+    'ORE_DUC' : 'Oregon',
+    'ARI_WIL' : 'Arizona',
+    'WAS_HUS' : 'Washington',
+    'CAL_BEA' : 'California',
+    'ARI_SUN' : 'Arizona State',
+    'WAS_COU' : 'Washington State',
+    'UTA_UTE' : 'Utah',
+    'SOU_TRO' : 'Southern California',
+
+    #SEC
+    'TEN_VOL' : 'Tennessee',
+    'FLA_GAT' : 'Florida',
+    'GEO_BUL' : 'Georgia',
+    'VAN_COM' : 'Vanderbilt',
+    'SOU_GAM' : 'South Carolina',
+    'KEN_WIL' : 'Kentucky',
+    'MIZ_TIG' : 'Missouri',
+    'TEX_AGG' : 'Texas A&M',
+    'ARK_RAZ' : 'Arkansas',
+    'LSU_TIG' : 'LSU',
+    'AUB_TIG' : 'Auburn',
+    'OLE_REB' : 'Ole Miss',
+    'ALA_CRI' : 'Alabama',
+    'MSU_BDG' : 'Mississippi State'
+
+
+}
+
 # Function to read all CSV files in a directory, including subdirectories
 def read_csv_directory(directory_path):
     all_data = []
@@ -30,7 +107,7 @@ def read_csv_directory(directory_path):
                 all_data.extend(data)
         except FileNotFoundError:
             print(f"File not found: {file_path}")
-    
+
     return all_data
 
 # Function to calculate batter statistics
@@ -156,8 +233,8 @@ def calculate_hitting_stats(data):
 
 # Function to write stats to a new CSV file
 def write_stats_to_csv(batters, output_file):
-    fieldnames = ['Player', 'Team', 'PA', 'AB', 'H', 'TB', '1B', '2B', '3B', 'HR', 'RBI', 
-                  'BB', 'K', 'HBP', 'SF', 'SH', 'GDP', 'AVG', 'BB%', 'K%', 
+    fieldnames = ['Player', 'Team', 'PA', 'AB', 'H', 'TB', '1B', '2B', '3B', 'HR', 'RBI',
+                  'BB', 'K', 'HBP', 'SF', 'SH', 'GDP', 'AVG', 'BB%', 'K%',
                   'OBP', 'SLG', 'OPS', 'ISO', 'BABIP', 'wOBA', 'AvgExitVelocity', 'AvgLaunchAngle']
 
     with open(output_file, mode='w', newline='') as file:
@@ -178,7 +255,9 @@ def write_stats_to_csv(batters, output_file):
             if 'K%' in cleaned_stats:
                 cleaned_stats['K%'] = f"{float(cleaned_stats['K%']):.2f}%"
 
-            writer.writerow({'Player': batter, 'Team': cleaned_stats['Team'], **cleaned_stats})
+            #Retrieve team name for each player, fallback to team code if team not in dictionary
+            team_name = team_names.get(cleaned_stats['Team'], cleaned_stats['Team'])
+            writer.writerow({'Player': batter, 'Team': team_name, **cleaned_stats})
 
 if __name__ == "__main__":
     directory_path = input("Enter the directory path: ")
