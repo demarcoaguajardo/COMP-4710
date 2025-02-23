@@ -85,8 +85,150 @@ team_names = {
     'AUB_TIG' : 'Auburn',
     'OLE_REB' : 'Ole Miss',
     'ALA_CRI' : 'Alabama',
-    'MSU_BDG' : 'Mississippi State'
+    'MSU_BDG' : 'Mississippi State',
 
+    #AAC
+    'UCF_KNI' : 'UCF',
+    'CIN_BEA' : 'Cincinnati',
+    'ECU_PIR' : 'East Carolina',
+    'HOU_COU' : 'Houston',
+    'MEM_TIG' : 'Memphis',
+    'USF_BUL' : 'USF',
+    'TUL_GRE' : 'Tulane',
+    'WIC_SHO' : 'Wichita State',
+
+    #Big South
+    'CAM_CAM' : 'Campbell',
+    'USC_UPS' : 'USC Upstate',
+    'NCA_BUL' : 'UNC Asheville',
+    'HIG_PAN' : 'High Point',
+    'CHA_BUC' : 'Charleston Southern',
+    'GAR_RUN' : 'Gardner-Webb',
+    'WIN_EAG' : 'Winthrop',
+    'LON_LAN' : 'Longwood',
+    'PRE_BLH' : 'Presbyterian',
+    'RAD_HIG' : 'Radford',
+    'NOR_AGG' : 'N.C. A&T',
+
+    # Coastal Athletic Association
+    'COL_CHA' : 'College of Charleston',
+    'HOF_PRI' : 'Hofstra',
+    'UNC_SEA' : 'UNCW',
+    'WM_TRI' : 'William & Mary',
+    'MON_HAW' : 'Monmouth',
+    'NOR_HUS' : 'Northeastern',
+    'ELO_PHO' : 'Elon',
+    'DEL_BLU' : 'Delaware',
+    'SBU_SEA' : 'Stony Brook',
+    'TOW_TIG' : 'Towson',
+
+    # Conference USA
+    'LOU_BUL' : 'Lousiana Tech',
+    'UTS_ROA' : 'UTSA',
+    'CHA_FOR' : 'Charlotte',
+    'MTSU_BLU' : 'Middle Tennessee',
+    'UAB_BLA' : 'UAB',
+    'Rice' : 'RIC_OWL',
+    'FLO_PAN' : 'FIU',
+    'DAL_PAT' : 'DBU',
+    'WES_HIL' : 'Western Kentucky',
+
+    # American East Conference
+    'UMASS_RIV' : 'UMass Lowell',
+    'ALB_GRE' : 'UAlbany',
+    'NJI_HIG' : 'NJIT',
+    'BIN_BEA' : 'Binghamton',
+    'UMBC_RET' : 'UMBC',
+    'BRY_BUL' : 'Bryant',
+
+    # Atlantic Sun Conference
+    'LIB_FLA' : 'Liberty',
+    'KEN_OWL' : 'Kennesaw State',
+    'FGCU' : 'FGCU',
+    'JUD' : 'Jacksonville',
+    'STE_HAT' : 'Stetson',
+    'EKU_COL' : 'Eastern Kentucky',
+    'LIP_BIS' : 'Lipscomb',
+    'JAC_GAM' : 'Jacksonville State',
+    'CEN_BEA' : 'Central Arkansas',
+    'BEL_KNI' : 'Bellarmine',
+    'ALA_LIO' : 'North Alabama',
+    'QUN_RYL' : 'Queens',
+
+    # Atlantic 10 Conference
+    'DAV_WIL' : 'Davidson',
+    'VCU_RAM' : 'VCU',
+    'RHO_RAM' : 'Rhode Island',
+    'GEO_PAT' : 'George Mason',
+    'STJ_HAW' : 'Saint Josephs',
+    'RIC_SPI' : 'Richmond',
+    'DAY_FLY' : 'Dayton',
+    'GEO_COL' : 'George Washington',
+    'FOR_RAM' : 'Fordham',
+    'UMA_AMH' : 'Massachusetts',
+    'STB_BON' : 'St. Bonaventure',
+
+    # Big East
+    'CRE_BLU' : 'Creighton',
+    'XAV_MUS' : 'Xavier',
+    'GEO_HOY' : 'Georgetown',
+    'VIL_WIL' : 'Villanova',
+    'STJ_RED' : 'St. Johns (NY)',
+    'SET_PIR' : 'Seton Hall',
+    'BUT_BUL' : 'Butler',
+
+    # Big West
+    'SAN_GAU' : 'UC Santa Barbara',
+    'CAL_MUS' : 'Cal Poly',
+    'HAW_WAR' : 'Hawaii',
+    'CAL_MAT' : 'CSUN',
+    'LON_DIR' : 'Long Beach State',
+    'CAL_ANT' : 'UC Irvine',
+    'CAL_FUL' : 'Cal State Fullerton',
+    'CSU_BAK' : 'CSU Bakersfield',
+    'CAL_AGO' : 'UC Davis',
+    'CAL_HIG' : 'UC Riverside',
+
+    # Horizon League
+    'WRI_RAI' : 'Wright State',
+    'OAK_GOL' : 'Oakland',
+    'PUR_FOR' : 'Purdue Fort Wayne',
+    'YSU_PEN' : 'Youngstown State',
+    'NOK_NOR' : 'Northern Kentucky',
+
+    # The Ivy League
+    'PEN_QUA' : 'Penn',
+    'COL_LION' : 'Columbia',
+    'DAR_GRE' : 'Dartmouth',
+    'YAL_BUL' : 'Yale',
+    'BRO_BEA' : 'Brown',
+    'COR_BRE' : 'Cornell',
+    'PRI_TIG' : 'Princeton',
+
+    # Metro Atlantic Athletic Conference
+    'FAI_STA' : 'Fairfield',
+    'MAR_RED' : 'Marist',
+    'MSM_MTN' : 'Mount St. Marys',
+    'CAN_GRI' : 'Canisius',
+    'NIA_EAG' : 'Niagara',
+    'RID_BRO' : 'Ridger',
+    'MAN_JAS' : 'Manhattan',
+    'QUI_BOB' : 'Quinnipiac',
+    'SIE_SAI' : 'Siena',
+    'SPU_PEA' : 'Saint Peters',
+    'ION_GAE' : 'Iona',
+
+    # Mid-American Conference
+    'BAL_CAR' : 'Ball State',
+    'CEN_MIC' : 'Central Michigan',
+    'TOL_ROC' : 'Toledo',
+    'OHI_BOB' : 'Ohio',
+    'MIA_RED' : 'Miami (OH)',
+    'EMU_EAG' : 'Eastern Michigan',
+    'WMI_BRO' : 'Western Michigan',
+    'BGS_FAL' : 'Bowling Green',
+    'NIU_HUS' : 'Northern Illinois',
+    'AKR_ZIP' : 'Akron'
 
 }
 
