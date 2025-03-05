@@ -13,6 +13,225 @@ wOBA_WEIGHTS = {
     'HR': 2.05
 }
 
+# Define the names of the team constants
+# Currently organized in old conference alignments
+team_names = {
+    #ACC
+    'LOU_CAR' : 'Louisville',
+    'NOT_IRI' : 'Notre Dame',
+    'WAK_DEA' : 'Wake Forest',
+    'FLO_SEM' : 'Florida State',
+    'NOR_WOL' : 'NC State',
+    'CLE_TIG' : 'Clemson',
+    'BOC_EAG' : 'Boston College',
+    'MIA_HUR' : 'Miami (FL)',
+    'VIR_TEC' : 'Virginia Tech',
+    'VIR_CAV' : 'Virginia',
+    'NOR_TAR' : 'North Carolina',
+    'GIT_YEL' : 'Georgia Tech',
+    'PIT_PAN' : 'Pittsburgh',
+    'DUK_BLU' : 'Duke',
+
+    #Big12
+    'TCU_HFG' : 'TCU',
+    'OKL_COW' : 'Oklahoma State',
+    'OKL_SOO' : 'Oklahoma',
+    'TEX_RAI' : 'Texas Tech',
+    'TEX_LON' : 'Texas',
+    'WES_MOU' : 'West Virginia',
+    'KAN_WIL' : 'Kansas State',
+    'BAY_BEA' : 'Baylor',
+    'KAN_JAY' : 'Kansas',
+
+    #Big10
+    'MAR_TER' : 'Maryland',
+    'RUT_SCA' : 'Rutgers',
+    'IOW_HAW' : 'Iowa',
+    'ILL_ILL' : 'Illinois',
+    'MIC_WOL' : 'Michigan',
+    'PEN_NIT' : 'Penn State',
+    'PUR_BOI' : 'Purdue',
+    'NOR_CAT' : 'Northwestern',
+    'IU' : 'Indiana',
+    'NEB' : 'Nebraska',
+    'OSU_BUC' : 'Ohio State',
+    'MIC_SPA' : 'Michigan State',
+    'MIN_GOL' : 'Minnesota',
+
+    #PAC-12
+    'STA_CAR' : 'Stanford',
+    'OSU_BEA' : 'Oregon State',
+    'UCLA' : 'UCLA',
+    'ORE_DUC' : 'Oregon',
+    'ARI_WIL' : 'Arizona',
+    'WAS_HUS' : 'Washington',
+    'CAL_BEA' : 'California',
+    'ARI_SUN' : 'Arizona State',
+    'WAS_COU' : 'Washington State',
+    'UTA_UTE' : 'Utah',
+    'SOU_TRO' : 'Southern California',
+
+    #SEC
+    'TEN_VOL' : 'Tennessee',
+    'FLA_GAT' : 'Florida',
+    'GEO_BUL' : 'Georgia',
+    'VAN_COM' : 'Vanderbilt',
+    'SOU_GAM' : 'South Carolina',
+    'KEN_WIL' : 'Kentucky',
+    'MIZ_TIG' : 'Missouri',
+    'TEX_AGG' : 'Texas A&M',
+    'ARK_RAZ' : 'Arkansas',
+    'LSU_TIG' : 'LSU',
+    'AUB_TIG' : 'Auburn',
+    'OLE_REB' : 'Ole Miss',
+    'ALA_CRI' : 'Alabama',
+    'MSU_BDG' : 'Mississippi State',
+
+    #AAC
+    'UCF_KNI' : 'UCF',
+    'CIN_BEA' : 'Cincinnati',
+    'ECU_PIR' : 'East Carolina',
+    'HOU_COU' : 'Houston',
+    'MEM_TIG' : 'Memphis',
+    'USF_BUL' : 'USF',
+    'TUL_GRE' : 'Tulane',
+    'WIC_SHO' : 'Wichita State',
+
+    #Big South
+    'CAM_CAM' : 'Campbell',
+    'USC_UPS' : 'USC Upstate',
+    'NCA_BUL' : 'UNC Asheville',
+    'HIG_PAN' : 'High Point',
+    'CHA_BUC' : 'Charleston Southern',
+    'GAR_RUN' : 'Gardner-Webb',
+    'WIN_EAG' : 'Winthrop',
+    'LON_LAN' : 'Longwood',
+    'PRE_BLH' : 'Presbyterian',
+    'RAD_HIG' : 'Radford',
+    'NOR_AGG' : 'N.C. A&T',
+
+    # Coastal Athletic Association
+    'COL_CHA' : 'College of Charleston',
+    'HOF_PRI' : 'Hofstra',
+    'UNC_SEA' : 'UNCW',
+    'WM_TRI' : 'William & Mary',
+    'MON_HAW' : 'Monmouth',
+    'NOR_HUS' : 'Northeastern',
+    'ELO_PHO' : 'Elon',
+    'DEL_BLU' : 'Delaware',
+    'SBU_SEA' : 'Stony Brook',
+    'TOW_TIG' : 'Towson',
+
+    # Conference USA
+    'LOU_BUL' : 'Lousiana Tech',
+    'UTS_ROA' : 'UTSA',
+    'CHA_FOR' : 'Charlotte',
+    'MTSU_BLU' : 'Middle Tennessee',
+    'UAB_BLA' : 'UAB',
+    'Rice' : 'RIC_OWL',
+    'FLO_PAN' : 'FIU',
+    'DAL_PAT' : 'DBU',
+    'WES_HIL' : 'Western Kentucky',
+
+    # American East Conference
+    'UMASS_RIV' : 'UMass Lowell',
+    'ALB_GRE' : 'UAlbany',
+    'NJI_HIG' : 'NJIT',
+    'BIN_BEA' : 'Binghamton',
+    'UMBC_RET' : 'UMBC',
+    'BRY_BUL' : 'Bryant',
+
+    # Atlantic Sun Conference
+    'LIB_FLA' : 'Liberty',
+    'KEN_OWL' : 'Kennesaw State',
+    'FGCU' : 'FGCU',
+    'JUD' : 'Jacksonville',
+    'STE_HAT' : 'Stetson',
+    'EKU_COL' : 'Eastern Kentucky',
+    'LIP_BIS' : 'Lipscomb',
+    'JAC_GAM' : 'Jacksonville State',
+    'CEN_BEA' : 'Central Arkansas',
+    'BEL_KNI' : 'Bellarmine',
+    'ALA_LIO' : 'North Alabama',
+    'QUN_RYL' : 'Queens',
+
+    # Atlantic 10 Conference
+    'DAV_WIL' : 'Davidson',
+    'VCU_RAM' : 'VCU',
+    'RHO_RAM' : 'Rhode Island',
+    'GEO_PAT' : 'George Mason',
+    'STJ_HAW' : 'Saint Josephs',
+    'RIC_SPI' : 'Richmond',
+    'DAY_FLY' : 'Dayton',
+    'GEO_COL' : 'George Washington',
+    'FOR_RAM' : 'Fordham',
+    'UMA_AMH' : 'Massachusetts',
+    'STB_BON' : 'St. Bonaventure',
+
+    # Big East
+    'CRE_BLU' : 'Creighton',
+    'XAV_MUS' : 'Xavier',
+    'GEO_HOY' : 'Georgetown',
+    'VIL_WIL' : 'Villanova',
+    'STJ_RED' : 'St. Johns (NY)',
+    'SET_PIR' : 'Seton Hall',
+    'BUT_BUL' : 'Butler',
+
+    # Big West
+    'SAN_GAU' : 'UC Santa Barbara',
+    'CAL_MUS' : 'Cal Poly',
+    'HAW_WAR' : 'Hawaii',
+    'CAL_MAT' : 'CSUN',
+    'LON_DIR' : 'Long Beach State',
+    'CAL_ANT' : 'UC Irvine',
+    'CAL_FUL' : 'Cal State Fullerton',
+    'CSU_BAK' : 'CSU Bakersfield',
+    'CAL_AGO' : 'UC Davis',
+    'CAL_HIG' : 'UC Riverside',
+
+    # Horizon League
+    'WRI_RAI' : 'Wright State',
+    'OAK_GOL' : 'Oakland',
+    'PUR_FOR' : 'Purdue Fort Wayne',
+    'YSU_PEN' : 'Youngstown State',
+    'NOK_NOR' : 'Northern Kentucky',
+
+    # The Ivy League
+    'PEN_QUA' : 'Penn',
+    'COL_LION' : 'Columbia',
+    'DAR_GRE' : 'Dartmouth',
+    'YAL_BUL' : 'Yale',
+    'BRO_BEA' : 'Brown',
+    'COR_BRE' : 'Cornell',
+    'PRI_TIG' : 'Princeton',
+
+    # Metro Atlantic Athletic Conference
+    'FAI_STA' : 'Fairfield',
+    'MAR_RED' : 'Marist',
+    'MSM_MTN' : 'Mount St. Marys',
+    'CAN_GRI' : 'Canisius',
+    'NIA_EAG' : 'Niagara',
+    'RID_BRO' : 'Ridger',
+    'MAN_JAS' : 'Manhattan',
+    'QUI_BOB' : 'Quinnipiac',
+    'SIE_SAI' : 'Siena',
+    'SPU_PEA' : 'Saint Peters',
+    'ION_GAE' : 'Iona',
+
+    # Mid-American Conference
+    'BAL_CAR' : 'Ball State',
+    'CEN_MIC' : 'Central Michigan',
+    'TOL_ROC' : 'Toledo',
+    'OHI_BOB' : 'Ohio',
+    'MIA_RED' : 'Miami (OH)',
+    'EMU_EAG' : 'Eastern Michigan',
+    'WMI_BRO' : 'Western Michigan',
+    'BGS_FAL' : 'Bowling Green',
+    'NIU_HUS' : 'Northern Illinois',
+    'AKR_ZIP' : 'Akron'
+
+}
+
 # Function to read all CSV files in a directory, including subdirectories
 def read_csv_directory(directory_path):
     all_data = []
@@ -30,7 +249,7 @@ def read_csv_directory(directory_path):
                 all_data.extend(data)
         except FileNotFoundError:
             print(f"File not found: {file_path}")
-    
+
     return all_data
 
 # Function to calculate batter statistics
@@ -156,8 +375,8 @@ def calculate_hitting_stats(data):
 
 # Function to write stats to a new CSV file
 def write_stats_to_csv(batters, output_file):
-    fieldnames = ['Player', 'Team', 'PA', 'AB', 'H', 'TB', '1B', '2B', '3B', 'HR', 'RBI', 
-                  'BB', 'K', 'HBP', 'SF', 'SH', 'GDP', 'AVG', 'BB%', 'K%', 
+    fieldnames = ['Player', 'Team', 'PA', 'AB', 'H', 'TB', '1B', '2B', '3B', 'HR', 'RBI',
+                  'BB', 'K', 'HBP', 'SF', 'SH', 'GDP', 'AVG', 'BB%', 'K%',
                   'OBP', 'SLG', 'OPS', 'ISO', 'BABIP', 'wOBA', 'AvgExitVelocity', 'AvgLaunchAngle']
 
     with open(output_file, mode='w', newline='') as file:
@@ -178,7 +397,9 @@ def write_stats_to_csv(batters, output_file):
             if 'K%' in cleaned_stats:
                 cleaned_stats['K%'] = f"{float(cleaned_stats['K%']):.2f}%"
 
-            writer.writerow({'Player': batter, 'Team': cleaned_stats['Team'], **cleaned_stats})
+            #Retrieve team name for each player, fallback to team code if team not in dictionary
+            team_name = team_names.get(cleaned_stats['Team'], cleaned_stats['Team'])
+            writer.writerow({'Player': batter, 'Team': team_name, **cleaned_stats})
 
 if __name__ == "__main__":
     directory_path = input("Enter the directory path: ")
