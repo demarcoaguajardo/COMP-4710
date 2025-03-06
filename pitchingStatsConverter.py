@@ -325,13 +325,13 @@ def calculate_pitching_stats(data):
         else:
             pitchers[pitcher]['FBVAALower'] = 0
         # Debugging prints for vertical approach angles in each zone
-        print(f"Pitcher: {pitcher}")
-        print(f"Upper Zone Pitches: {pitchers[pitcher]['UpperZonePitches']}, Mid Zone Pitches: {pitchers[pitcher]['MidZonePitches']}, Lower Zone Pitches: {pitchers[pitcher]['LowerZonePitches']}")
-        print(f"Upper Zone VertApprAngles: {fastball_upper_zone_angles[pitcher]}")
-        print(f"Mid Zone VertApprAngles: {fastball_mid_zone_angles[pitcher]}")
-        print(f"Lower Zone VertApprAngles: {fastball_lower_zone_angles[pitcher]}")
-        print(f"FB VAA Upper: {pitchers[pitcher]['FBVAAUpper']:.2f}, FB VAA Mid: {pitchers[pitcher]['FBVAAMid']:.2f}, FB VAA Lower: {pitchers[pitcher]['FBVAALower']:.2f}")
-        print()
+        # print(f"Pitcher: {pitcher}")
+        # print(f"Upper Zone Pitches: {pitchers[pitcher]['UpperZonePitches']}, Mid Zone Pitches: {pitchers[pitcher]['MidZonePitches']}, Lower Zone Pitches: {pitchers[pitcher]['LowerZonePitches']}")
+        # print(f"Upper Zone VertApprAngles: {fastball_upper_zone_angles[pitcher]}")
+        # print(f"Mid Zone VertApprAngles: {fastball_mid_zone_angles[pitcher]}")
+        # print(f"Lower Zone VertApprAngles: {fastball_lower_zone_angles[pitcher]}")
+        # print(f"FB VAA Upper: {pitchers[pitcher]['FBVAAUpper']:.2f}, FB VAA Mid: {pitchers[pitcher]['FBVAAMid']:.2f}, FB VAA Lower: {pitchers[pitcher]['FBVAALower']:.2f}")
+        # print()
 
     return pitchers, team_runs, pitcher_teams
 
