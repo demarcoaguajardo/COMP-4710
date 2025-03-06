@@ -10,6 +10,27 @@ Author: Demarco Guajardo
 # Imports
 import csv
 from collections import defaultdict
+import statistics
+
+# Define strike zone boundaries
+STRIKE_ZONE = {
+    'side_min': -0.7085,
+    'side_max': 0.7085,
+    'height_min': 1.7,
+    'height_max': 3.4
+}
+
+# Define strike zone parts
+#   Upper = 2.83 to 3.4
+#   Middle = 2.27 to 2.83
+#   Lower = 1.7 to 2.27
+STRIKE_ZONE_HEIGHT = STRIKE_ZONE['height_max'] - STRIKE_ZONE['height_min']
+UPPER_ZONE_MAX = STRIKE_ZONE['height_max']
+UPPER_ZONE_MIN = STRIKE_ZONE['height_min'] + (2 * STRIKE_ZONE_HEIGHT / 3)
+MID_ZONE_MAX = UPPER_ZONE_MIN
+MID_ZONE_MIN = STRIKE_ZONE['height_min'] + (STRIKE_ZONE_HEIGHT / 3)
+LOWER_ZONE_MAX = MID_ZONE_MIN
+LOWER_ZONE_MIN = STRIKE_ZONE['height_min']
 
 def read_csv(file_path):
     try:
@@ -22,7 +43,12 @@ def read_csv(file_path):
         return None
 
 def calculate_pitching_stats(data):
-    pitchers = defaultdict(lambda: defaultdict(int))
+    pitchers = defaultdict(lambda: defaultdict(int)) # Dictionary of pitchers and their stats
+    fastball_vert_appr_anngles = defaultdict(list) # Stores VertApprAngles for fastballs
+    fastball_upper_zone_angles = defaultdict(list) # Stores VertApprAngles for fastballs in the upper zone
+    fastball_mid_zone_angles = defaultdict(list) # Stores VertApprAngles for fastballs in the middle zone
+    fastball_lower_zone_angles = defaultdict(list) # Stores VertApprAngles for fastballs in the lower zone
+
 
     team_runs = defaultdict(int) # Tracks runs scored by each team
     pitcher_teams = defaultdict(str) # Tracks team of each pitcher
@@ -46,6 +72,10 @@ def calculate_pitching_stats(data):
         balls = int(row['Balls']) if 'Balls' in row else 0
         tagged_hit_type = row['TaggedHitType']
         play_result = row['PlayResult']
+        plate_loc_side = float(row['PlateLocSide']) if 'PlateLocSide' in row else 0
+        plate_loc_height = float (row['PlateLocHeight']) if 'PlateLocHeight' in row else 0
+        tagged_pitch_type = row['TaggedPitchType']
+        vert_appr_angle = float(row['VertApprAngle']) if 'VertApprAngle' in row else 0
 
         # Initialize stats for each pitcher
         if pitcher_name not in pitchers:
@@ -69,13 +99,76 @@ def calculate_pitching_stats(data):
                 'First2of3StrikesOrInPlay': 0,
                 'AtBatEfficiency': 0,
                 'HomeRuns': 0,
-                'FIP': 0
+                'FIP': 0,
+                'Swings': 0,
+                'Whiffs': 0,
+                'CalledStrikes': 0,
+                'IZSwings': 0,
+                'IZWhiffs': 0,
+                'IZPitches': 0,
+                'OZSwings': 0,
+                'OZWhiffs': 0,
+                'OZPitches': 0,
+                'Fastballs': 0,
+                'FBVertApprAngles': [],
+                'FBnVAA': 0,
+                'UpperZonePitches': 0,
+                'MidZonePitches': 0,
+                'LowerZonePitches': 0,
+                'FBVAAUpper': 0,
+                'FBVAAMid': 0,
+                'FBVAALower': 0,
+                'Cutters': 0,
+                'Sinkers': 0,
+                'Sliders': 0
             }
 
+
+        # Track total pitches thrown
+        pitchers[pitcher_name]['TotalPitches'] += 1
+
+        # Track total pitches thrown outside the strike zone
+        if not (STRIKE_ZONE['side_min'] <= plate_loc_side <= STRIKE_ZONE['side_max'] and
+                STRIKE_ZONE['height_min'] <= plate_loc_height <= STRIKE_ZONE['height_max']):
+            pitchers[pitcher_name]['OZPitches'] += 1
+
+        # Track total pitches thrown inside the strike zone
+        if (STRIKE_ZONE['side_min'] <= plate_loc_side <= STRIKE_ZONE['side_max'] and
+            STRIKE_ZONE['height_min'] <= plate_loc_height <= STRIKE_ZONE['height_max']):
+            pitchers[pitcher_name]['IZPitches'] += 1
+
+            # Track pitches in different parts of the strike zone
+            if UPPER_ZONE_MIN <= plate_loc_height <= UPPER_ZONE_MAX:
+                pitchers[pitcher_name]['UpperZonePitches'] += 1
+                if tagged_pitch_type in ['Fastball', 'FourSeamFastBall', 'TwoSeamFastBall']:
+                    fastball_upper_zone_angles[pitcher_name].append(vert_appr_angle)
+            elif MID_ZONE_MIN <= plate_loc_height <= MID_ZONE_MAX:
+                pitchers[pitcher_name]['MidZonePitches'] += 1
+                if tagged_pitch_type in ['Fastball', 'FourSeamFastBall', 'TwoSeamFastBall']:
+                    fastball_mid_zone_angles[pitcher_name].append(vert_appr_angle)
+            elif LOWER_ZONE_MIN <= plate_loc_height <= LOWER_ZONE_MAX:
+                pitchers[pitcher_name]['LowerZonePitches'] += 1
+                if tagged_pitch_type in ['Fastball', 'FourSeamFastBall', 'TwoSeamFastBall']:
+                    fastball_lower_zone_angles[pitcher_name].append(vert_appr_angle)
+
+        # Track pitch types
+        if tagged_pitch_type in ['Fastball', 'FourSeamFastBall', 'TwoSeamFastBall']:
+            pitchers[pitcher_name]['Fastballs'] += 1
+            pitchers[pitcher_name]['FBVertApprAngles'].append(vert_appr_angle)
+            fastball_vert_appr_anngles[pitcher_name].append(vert_appr_angle)
+        elif tagged_pitch_type == 'Cutter':
+            pitchers[pitcher_name]['Cutters'] += 1
+        elif tagged_pitch_type == 'Sinker':
+            pitchers[pitcher_name]['Sinkers'] += 1
+        elif tagged_pitch_type == 'Slider':
+            pitchers[pitcher_name]['Sliders'] += 1
+
+
         # Track earned runs for pitchers 
-        # Note: Can not track inherited runners or passed balls so this only accounts for runs excluding errors
+        #   Note: Can not track inherited runners or passed balls so this only accounts for runs excluding errors
         if row['PlayResult'] != 'Error':
             pitchers[pitcher_name]['EarnedRuns'] += runs_scored
+
         # Track outs recorded by pitchers
         pitchers[pitcher_name]['OutsRecorded'] += outs_on_play
 
@@ -105,9 +198,6 @@ def calculate_pitching_stats(data):
                                  pitch_call == 'HitByPitch'):
             pitchers[pitcher_name]['FirstPitchBalls'] += 1
 
-        # Track total pitches thrown
-        pitchers[pitcher_name]['TotalPitches'] += 1
-
         # Track Strikes and Balls and Fouls After 2 Strikes and Hit By Pitches
         if pitch_call in ['StrikeCalled', 'StrikeSwinging', 'InPlay']:
             pitchers[pitcher_name]['Strikes'] += 1
@@ -124,6 +214,31 @@ def calculate_pitching_stats(data):
         # Track Home Runs
         if play_result == 'HomeRun':
             pitchers[pitcher_name]['HomeRuns'] += 1
+
+        # Track swings and whiffs
+        if pitch_call in ['StrikeSwinging', 'InPlay', 'FoulBall']:
+            pitchers[pitcher_name]['Swings'] += 1
+            # Check if the pitch was inside the strike zone
+            if (STRIKE_ZONE['side_min'] <= plate_loc_side <= STRIKE_ZONE['side_max'] and
+                STRIKE_ZONE['height_min'] <= plate_loc_height <= STRIKE_ZONE['height_max']):
+                pitchers[pitcher_name]['IZSwings'] += 1
+            # Swing is outside strikezone
+            else:
+                pitchers[pitcher_name]['OZSwings'] += 1
+        if pitch_call == 'StrikeSwinging':
+            pitchers[pitcher_name]['Whiffs'] += 1
+            # Check if the pitch was inside the strike zone
+            if (STRIKE_ZONE['side_min'] <= plate_loc_side <= STRIKE_ZONE['side_max'] and
+                STRIKE_ZONE['height_min'] <= plate_loc_height <= STRIKE_ZONE['height_max']):
+                pitchers[pitcher_name]['IZWhiffs'] += 1
+            # Whiff is outside strikezone
+            else:
+                pitchers[pitcher_name]['OZWhiffs'] += 1
+
+
+        # Track called strikes
+        if pitch_call == 'StrikeCalled':
+            pitchers[pitcher_name]['CalledStrikes'] += 1
 
         # Track the first three pitches of each plate appearance
         if pitch_of_pa == 1:
@@ -172,9 +287,51 @@ def calculate_pitching_stats(data):
         FIP_constant = 3.17 # This is a constant used from the 2024 MLB season
         # Calculate FIP
         if inn_pitched > 0:
-            pitchers[pitcher]['FIP'] = ((13 * home_runs) + (3 * (walks + hit_by_pitches)) - (2 * strikeouts)) / inn_pitched + FIP_constant
+            pitchers[pitcher]['FIP'] = ((13 * home_runs) + (3 * (walks + hit_by_pitches)) 
+                                        - (2 * strikeouts)) / inn_pitched + FIP_constant
         else:
             pitchers[pitcher]['FIP'] = 0
+
+        #Calculate FB nVAA (using the median, because normalizing makes the mean less useful)
+        if fastball_vert_appr_anngles[pitcher]:
+            mean_vert_appr_angle = statistics.mean(fastball_vert_appr_anngles[pitcher])
+            stddev_vert_appr_angle = statistics.stdev(fastball_vert_appr_anngles[pitcher])
+            normalized_angles = [(angle - mean_vert_appr_angle) / stddev_vert_appr_angle
+                                 for angle in fastball_vert_appr_anngles[pitcher]]
+            pitchers[pitcher]['FBnVAA'] = statistics.median(normalized_angles)
+            # # Debugging Prints
+            # print(f"Pitcher: {pitcher}")
+            # print(f"VertApprAngles: {fastball_vert_appr_anngles[pitcher]}")
+            # print(f"Mean Vertical Approach Angle: {mean_vert_appr_angle}")
+            # print(f"Standard Deviation of Vertical Approach Angle: {stddev_vert_appr_angle}")
+            # print(f"Normalized Vertical Approach Angles: {normalized_angles}")
+            # print(f"Sum of Normalized Angles: {sum(normalized_angles)}")
+            # print(f"FB nVAA: {pitchers[pitcher]['FBnVAA']}")
+            # print()
+        else:
+            pitchers[pitcher]['FBnVAA'] = 0
+
+        # Calculate FB VAA for different strike zone parts (using mean bc not normalized))
+        if fastball_upper_zone_angles[pitcher]:
+            pitchers[pitcher]['FBVAAUpper'] = statistics.mean(fastball_upper_zone_angles[pitcher])
+        else: 
+            pitchers[pitcher]['FBVAAUpper'] = 0
+        if fastball_mid_zone_angles[pitcher]:
+            pitchers[pitcher]['FBVAAMid'] = statistics.mean(fastball_mid_zone_angles[pitcher])
+        else:
+            pitchers[pitcher]['FBVAAMid'] = 0
+        if fastball_lower_zone_angles[pitcher]:
+            pitchers[pitcher]['FBVAALower'] = statistics.mean(fastball_lower_zone_angles[pitcher])
+        else:
+            pitchers[pitcher]['FBVAALower'] = 0
+        # Debugging prints for vertical approach angles in each zone
+        print(f"Pitcher: {pitcher}")
+        print(f"Upper Zone Pitches: {pitchers[pitcher]['UpperZonePitches']}, Mid Zone Pitches: {pitchers[pitcher]['MidZonePitches']}, Lower Zone Pitches: {pitchers[pitcher]['LowerZonePitches']}")
+        print(f"Upper Zone VertApprAngles: {fastball_upper_zone_angles[pitcher]}")
+        print(f"Mid Zone VertApprAngles: {fastball_mid_zone_angles[pitcher]}")
+        print(f"Lower Zone VertApprAngles: {fastball_lower_zone_angles[pitcher]}")
+        print(f"FB VAA Upper: {pitchers[pitcher]['FBVAAUpper']:.2f}, FB VAA Mid: {pitchers[pitcher]['FBVAAMid']:.2f}, FB VAA Lower: {pitchers[pitcher]['FBVAALower']:.2f}")
+        print()
 
     return pitchers, team_runs, pitcher_teams
 
@@ -230,6 +387,23 @@ def print_pitching_stats(pitchers):
         First2of3StrikesOrInPlay = stats['First2of3StrikesOrInPlay'] # First 2 of 3 Strikes or In Play
         AtBatEfficiency = stats['AtBatEfficiency'] # At Bats in Less Than 4 Pitches
         FIP = stats['FIP'] # Fielding Independent Pitching
+        Swings = stats['Swings'] # Swings
+        Whiffs = stats['Whiffs'] # Whiffs
+        CalledStrikes = stats['CalledStrikes'] # Called Strikes
+        IZSwings = stats['IZSwings'] # Swings Inside the Strike Zone
+        IZWhiffs = stats['IZWhiffs'] # Whiffs Inside the Strike Zone
+        IZPitches = stats['IZPitches'] # Pitches Inside the Strike Zone
+        OZSwings = stats['OZSwings'] # Swings Outside the Strike Zone
+        OZWhiffs = stats['OZWhiffs'] # Whiffs Outside the Strike Zone
+        OZPitches = stats['OZPitches'] # Pitches Outside the Strike Zone
+        Fastballs = stats['Fastballs'] # Fastballs
+        Cutters = stats['Cutters'] # Cutters
+        Sinkers = stats['Sinkers'] # Sinkers
+        Sliders = stats['Sliders'] # Sliders
+        FBnVAA = stats['FBnVAA'] # Fastball normalized Vertical Approach Angle
+        FBVAAUpper = stats['FBVAAUpper'] # Fastball Vertical Approach Angle in the Upper Zone
+        FBVAAMid = stats['FBVAAMid'] # Fastball Vertical Approach Angle in the Middle Zone
+        FBVAALower = stats['FBVAALower'] # Fastball Vertical Approach Angle in the Lower Zone
 
         # Additional Stats
 
@@ -240,6 +414,10 @@ def print_pitching_stats(pitchers):
         strikePercent = Strikes / TP * 100 if TP > 0 else 0 # Strike Percentage
         ballPercent = Balls / TP * 100 if TP > 0 else 0 # Ball Percentage
         AtBatEfficiencyPercent = AtBatEfficiency / TBF * 100 if TBF > 0 else 0 # At Bat Efficiency Percentage
+        WhiffPercent = Whiffs / Swings * 100 if Swings > 0 else 0 # Whiff Percentage
+        CSWPercent = (CalledStrikes + Whiffs) / TP * 100 if TP > 0 else 0 # Called Strike or Whiff Percentage
+        IZWhiffPercent = IZWhiffs / IZSwings * 100 if IZSwings > 0 else 0 # Whiff Percentage Inside the Strike Zone
+        ChasePercent = OZSwings / OZPitches * 100 if OZPitches > 0 else 0 # Chase Percentage
 
         # --------------- Display Pitching Stats --------------- #
 
@@ -257,6 +435,12 @@ def print_pitching_stats(pitchers):
         print(f"K: {K}, BB: {BB}, Home Runs: {HR}")
         print(f"K%: {Kpercent:.2f}%, BB%: {BBpercent:.2f}%")
         print(f"FIP: {FIP:.2f}")
+        print(f"Swings: {Swings}, Whiffs: {Whiffs}, Whiff%: {WhiffPercent:.2f}%")
+        print(f"Called Strikes: {CalledStrikes}, CSW%: {CSWPercent:.2f}%")
+        print(f"In-Zone Swings: {IZSwings}, In-Zone Whiffs: {IZWhiffs}, IZWhiff%: {IZWhiffPercent:.2f}%")
+        print(f"Out-Zone Swings: {OZSwings}, Out-Zone Pitches: {OZPitches}, Chase%: {ChasePercent:.2f}%")
+        print(f"Fastballs: {Fastballs}, Cutters: {Cutters}, Sinkers: {Sinkers}, Sliders: {Sliders}")
+        print(f"FB nVAA: {FBnVAA:.2f}, FB VAA Upper: {FBVAAUpper:.2f}, FB VAA Mid: {FBVAAMid:.2f}, FB VAA Lower: {FBVAALower:.2f}")
         print()
 
 # -------------------- MAIN FUNCTION -------------------- #
