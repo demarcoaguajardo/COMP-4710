@@ -76,6 +76,18 @@ def calculate_pitching_stats(data):
         plate_loc_height = float (row['PlateLocHeight']) if 'PlateLocHeight' in row else 0
         tagged_pitch_type = row['TaggedPitchType']
         vert_appr_angle = float(row['VertApprAngle']) if 'VertApprAngle' in row else 0
+        effective_velocity = float(row['EffectiveVelo']) if 'EffectiveVelo' in row else 0
+        induced_vert_break = float(row['InducedVertBreak']) if 'InducedVertBreak' in row else 0
+        horz_break = float(row['HorzBreak']) if 'HorzBreak' in row else 0
+        try: # Had to make try/except block because some spin rates were empty strings
+            spin_rate = float(row['SpinRate']) if 'SpinRate' in row and row['SpinRate'].strip() else 0
+        except ValueError:
+            print(f"Invalid SpinRate value: {row['SpinRate']} in row: {row}")
+            spin_rate = 0
+        release_height = float(row['RelHeight']) if 'RelHeight' in row else 0
+        extension = float(row['Extension']) if 'Extension' in row else 0
+
+        # pitch_location_confidence = row['PitchLocationConfidence'] if 'PitchLocationConfidence' in row else 0
 
         # Initialize stats for each pitcher
         if pitcher_name not in pitchers:
@@ -109,7 +121,6 @@ def calculate_pitching_stats(data):
                 'OZSwings': 0,
                 'OZWhiffs': 0,
                 'OZPitches': 0,
-                'Fastballs': 0,
                 'FBVertApprAngles': [],
                 'FBnVAA': 0,
                 'UpperZonePitches': 0,
@@ -118,9 +129,102 @@ def calculate_pitching_stats(data):
                 'FBVAAUpper': 0,
                 'FBVAAMid': 0,
                 'FBVAALower': 0,
+                # Fastball
+                'Fastballs': 0,
+                'FastballsIZ': 0,
+                'FastballIZ%': 0,
+                'FastballVelo': [],
+                'FastballAvgVelo': 0,
+                'FastballMaxVelo': 0,
+                'FastballMinVelo': 0,
+                'FastballIVB': [],
+                'FastballAvgIVB': 0,
+                'FastballMaxIVB': 0,
+                'FastballMinIVB': 0,
+                'FastballHB': [],
+                'FastballAvgHB': 0,
+                'FastballMaxHB': 0,
+                'FastballMinHB': 0,
+                'FastballSpin': [],
+                'FastballAvgSpin': 0,
+                'FastballMaxSpin': 0,
+                'FastballMinSpin': 0,
+                'FastballReleaseHeight': [],
+                'FastballAvgReleaseHeight': 0,
+                'FastballExtension': [],
+                'FastballAvgExtension': 0,
+                # Cutter
                 'Cutters': 0,
+                'CuttersIZ': 0,
+                'CutterIZ%': 0,
+                'CutterVelo': [],
+                'CutterAvgVelo': 0,
+                'CutterMaxVelo': 0,
+                'CutterMinVelo': 0,
+                'CutterIVB': [],
+                'CutterAvgIVB': 0,
+                'CutterMaxIVB': 0,
+                'CutterMinIVB': 0,
+                'CutterHB': [],
+                'CutterAvgHB': 0,
+                'CutterMaxHB': 0,
+                'CutterMinHB': 0,
+                'CutterSpin': [],
+                'CutterAvgSpin': 0,
+                'CutterMaxSpin': 0,
+                'CutterMinSpin': 0,
+                'CutterReleaseHeight': [],
+                'CutterAvgReleaseHeight': 0,
+                'CutterExtension': [],
+                'CutterAvgExtension': 0,
+                # Sinker
                 'Sinkers': 0,
-                'Sliders': 0
+                'SinkersIZ': 0,
+                'SinkerIZ%': 0,
+                'SinkerVelo': [],
+                'SinkerAvgVelo': 0,
+                'SinkerMaxVelo': 0,
+                'SinkerMinVelo': 0,
+                'SinkerIVB': [],
+                'SinkerAvgIVB': 0,
+                'SinkerMaxIVB': 0,
+                'SinkerMinIVB': 0,
+                'SinkerHB': [],
+                'SinkerAvgHB': 0,
+                'SinkerMaxHB': 0,
+                'SinkerMinHB': 0,
+                'SinkerSpin': [],
+                'SinkerAvgSpin': 0,
+                'SinkerMaxSpin': 0,
+                'SinkerMinSpin': 0,
+                'SinkerReleaseHeight': [],
+                'SinkAvgReleaseHeight': 0,
+                'SinkerExtension': [],
+                'SinkerAvgExtension': 0,
+                # Slider
+                'Sliders': 0,
+                'SlidersIZ': 0,
+                'SliderIZ%': 0,
+                'SliderVelo': [],
+                'SliderAvgVelo': 0,
+                'SliderMaxVelo': 0,
+                'SliderMinVelo': 0,
+                'SliderIVB': [],
+                'SliderAvgIVB': 0,
+                'SliderMaxIVB': 0,
+                'SliderMinIVB': 0,
+                'SliderHB': [],
+                'SliderAvgHB': 0,
+                'SliderMaxHB': 0,
+                'SliderMinHB': 0,
+                'SliderSpin': [],
+                'SliderAvgSpin': 0,
+                'SliderMaxSpin': 0,
+                'SliderMinSpin': 0,
+                'SliderReleaseHeight': [],
+                'SliderAvgReleaseHeight': 0,
+                'SliderExtension': [],
+                'SliderAvgExtension': 0
             }
 
 
@@ -151,17 +255,118 @@ def calculate_pitching_stats(data):
                 if tagged_pitch_type in ['Fastball', 'FourSeamFastBall', 'TwoSeamFastBall']:
                     fastball_lower_zone_angles[pitcher_name].append(vert_appr_angle)
 
-        # Track pitch types
+        # ---------- Track pitch types ----------
+
+
+        # Fastballs
         if tagged_pitch_type in ['Fastball', 'FourSeamFastBall', 'TwoSeamFastBall']:
             pitchers[pitcher_name]['Fastballs'] += 1
             pitchers[pitcher_name]['FBVertApprAngles'].append(vert_appr_angle)
             fastball_vert_appr_anngles[pitcher_name].append(vert_appr_angle)
+
+            # Track Velocity
+            if effective_velocity > 0: 
+                pitchers[pitcher_name]['FastballVelo'].append(effective_velocity)
+            # Track Induced Vertical Break
+            if induced_vert_break != 0:
+                pitchers[pitcher_name]['FastballIVB'].append(induced_vert_break)
+            # Track Horizontal Break
+            if horz_break != 0:
+                pitchers[pitcher_name]['FastballHB'].append(horz_break)
+            # Track Spin Rate
+            if spin_rate > 0:
+                pitchers[pitcher_name]['FastballSpin'].append(spin_rate)
+            # Track Release Height
+            if release_height > 0:
+                pitchers[pitcher_name]['FastballReleaseHeight'].append(release_height)
+            # Track Extension
+            if extension != 0:
+                pitchers[pitcher_name]['FastballExtension'].append(extension)
+            # Track In-Zone Pitches
+            if (STRIKE_ZONE['side_min'] <= plate_loc_side <= STRIKE_ZONE['side_max'] and
+                STRIKE_ZONE['height_min'] <= plate_loc_height <= STRIKE_ZONE['height_max']):
+                pitchers[pitcher_name]['FastballsIZ'] += 1
+
+        # Cutters
         elif tagged_pitch_type == 'Cutter':
             pitchers[pitcher_name]['Cutters'] += 1
+
+            # Track Velocity
+            if effective_velocity > 0: 
+                pitchers[pitcher_name]['CutterVelo'].append(effective_velocity)
+            # Track Induced Vertical Break
+            if induced_vert_break != 0:
+                pitchers[pitcher_name]['CutterIVB'].append(induced_vert_break)
+            # Track Horizontal Break
+            if horz_break != 0:
+                pitchers[pitcher_name]['CutterHB'].append(horz_break)
+            # Track Spin Rate
+            if spin_rate > 0:
+                pitchers[pitcher_name]['CutterSpin'].append(spin_rate)
+            # Track Release Height
+            if release_height > 0:
+                pitchers[pitcher_name]['CutterReleaseHeight'].append(release_height)
+            # Track Extension
+            if extension != 0:
+                pitchers[pitcher_name]['CutterExtension'].append(extension)
+            # Track In-Zone Pitches
+            if (STRIKE_ZONE['side_min'] <= plate_loc_side <= STRIKE_ZONE['side_max'] and
+                STRIKE_ZONE['height_min'] <= plate_loc_height <= STRIKE_ZONE['height_max']):
+                pitchers[pitcher_name]['CuttersIZ'] += 1
+
+        # Sinkers
         elif tagged_pitch_type == 'Sinker':
             pitchers[pitcher_name]['Sinkers'] += 1
+
+            # Track Velocity
+            if effective_velocity > 0: 
+                pitchers[pitcher_name]['SinkerVelo'].append(effective_velocity)
+            # Track Induced Vertical Break
+            if induced_vert_break != 0:
+                pitchers[pitcher_name]['SinkerIVB'].append(induced_vert_break)
+            # Track Horizontal Break
+            if horz_break != 0:
+                pitchers[pitcher_name]['SinkerHB'].append(horz_break)
+            # Track Spin Rate
+            if spin_rate > 0:
+                pitchers[pitcher_name]['SinkerSpin'].append(spin_rate)
+            # Track Release Height
+            if release_height > 0:
+                pitchers[pitcher_name]['SinkerReleaseHeight'].append(release_height)
+            # Track Extension
+            if extension != 0:
+                pitchers[pitcher_name]['SinkerExtension'].append(extension)
+            # Track In-Zone Pitches
+            if (STRIKE_ZONE['side_min'] <= plate_loc_side <= STRIKE_ZONE['side_max'] and
+                STRIKE_ZONE['height_min'] <= plate_loc_height <= STRIKE_ZONE['height_max']):
+                pitchers[pitcher_name]['SinkersIZ'] += 1
+
+        # Sliders
         elif tagged_pitch_type == 'Slider':
             pitchers[pitcher_name]['Sliders'] += 1
+
+            # Track Velocity
+            if effective_velocity > 0: 
+                pitchers[pitcher_name]['SliderVelo'].append(effective_velocity)
+            # Track Induced Vertical Break
+            if induced_vert_break != 0:
+                pitchers[pitcher_name]['SliderIVB'].append(induced_vert_break)
+            # Track Horizontal Break
+            if horz_break != 0:
+                pitchers[pitcher_name]['SliderHB'].append(horz_break)
+            # Track Spin Rate
+            if spin_rate > 0:
+                pitchers[pitcher_name]['SliderSpin'].append(spin_rate)
+            # Track Release Height
+            if release_height > 0:
+                pitchers[pitcher_name]['SliderReleaseHeight'].append(release_height)
+            # Track Extension
+            if extension != 0:
+                pitchers[pitcher_name]['SliderExtension'].append(extension)
+            # Track In-Zone Pitches
+            if (STRIKE_ZONE['side_min'] <= plate_loc_side <= STRIKE_ZONE['side_max'] and
+                STRIKE_ZONE['height_min'] <= plate_loc_height <= STRIKE_ZONE['height_max']):
+                pitchers[pitcher_name]['SlidersIZ'] += 1
 
 
         # Track earned runs for pitchers 
@@ -333,6 +538,273 @@ def calculate_pitching_stats(data):
         # print(f"FB VAA Upper: {pitchers[pitcher]['FBVAAUpper']:.2f}, FB VAA Mid: {pitchers[pitcher]['FBVAAMid']:.2f}, FB VAA Lower: {pitchers[pitcher]['FBVAALower']:.2f}")
         # print()
 
+        # ---------- VELOCITY ----------
+
+        # Calculate Fastball Velocity stats
+        if pitchers[pitcher]['FastballVelo']:
+            velocities = pitchers[pitcher]['FastballVelo']
+            pitchers[pitcher]['FastballAvgVelo'] = statistics.mean(velocities)
+            pitchers[pitcher]['FastballMaxVelo'] = max(velocities)
+            pitchers[pitcher]['FastballMinVelo'] = min(velocities)
+        else:
+            pitchers[pitcher]['FastballAvgVelo'] = 0
+            pitchers[pitcher]['FastballMaxVelo'] = 0
+            pitchers[pitcher]['FastballMinVelo'] = 0
+        # Calculate Cutter Velocity stats
+        if pitchers[pitcher]['CutterVelo']:
+            velocities = pitchers[pitcher]['CutterVelo']
+            pitchers[pitcher]['CutterAvgVelo'] = statistics.mean(velocities)
+            pitchers[pitcher]['CutterMaxVelo'] = max(velocities)
+            pitchers[pitcher]['CutterMinVelo'] = min(velocities)
+        else:
+            pitchers[pitcher]['CutterAvgVelo'] = 0
+            pitchers[pitcher]['CutterMaxVelo'] = 0
+            pitchers[pitcher]['CutterMinVelo'] = 0
+        # Calculate Sinker Velocity stats
+        if pitchers[pitcher]['SinkerVelo']:
+            velocities = pitchers[pitcher]['SinkerVelo']
+            pitchers[pitcher]['SinkerAvgVelo'] = statistics.mean(velocities)
+            pitchers[pitcher]['SinkerMaxVelo'] = max(velocities)
+            pitchers[pitcher]['SinkerMinVelo'] = min(velocities)
+        else:
+            pitchers[pitcher]['SinkerAvgVelo'] = 0
+            pitchers[pitcher]['SinkerMaxVelo'] = 0
+            pitchers[pitcher]['SinkerMinVelo'] = 0
+        # Calculate Slider Velocity stats
+        if pitchers[pitcher]['SliderVelo']:
+            velocities = pitchers[pitcher]['SliderVelo']
+            pitchers[pitcher]['SliderAvgVelo'] = statistics.mean(velocities)
+            pitchers[pitcher]['SliderMaxVelo'] = max(velocities)
+            pitchers[pitcher]['SliderMinVelo'] = min(velocities)
+        else:
+            pitchers[pitcher]['SliderAvgVelo'] = 0
+            pitchers[pitcher]['SliderMaxVelo'] = 0
+            pitchers[pitcher]['SliderMinVelo'] = 0
+
+        # ---------- INDUCED VERTICAL BREAK ----------
+
+        # Calculate Fastball IVB stats
+        if pitchers[pitcher]['FastballIVB']:
+            ivbs = pitchers[pitcher]['FastballIVB']
+            pitchers[pitcher]['FastballAvgIVB'] = statistics.mean(ivbs)
+            pitchers[pitcher]['FastballMaxIVB'] = max(ivbs)
+            pitchers[pitcher]['FastballMinIVB'] = min(ivbs)
+        else: 
+            pitchers[pitcher]['FastballAvgIVB'] = 0
+            pitchers[pitcher]['FastballMaxIVB'] = 0
+            pitchers[pitcher]['FastballMinIVB'] = 0
+        # Calculate Cutter IVB stats
+        if pitchers[pitcher]['CutterIVB']:
+            ivbs = pitchers[pitcher]['CutterIVB']
+            pitchers[pitcher]['CutterAvgIVB'] = statistics.mean(ivbs)
+            pitchers[pitcher]['CutterMaxIVB'] = max(ivbs)
+            pitchers[pitcher]['CutterMinIVB'] = min(ivbs)
+        else:
+            pitchers[pitcher]['CutterAvgIVB'] = 0
+            pitchers[pitcher]['CutterMaxIVB'] = 0
+            pitchers[pitcher]['CutterMinIVB'] = 0
+        # Calculate Sinker IVB stats
+        if pitchers[pitcher]['SinkerIVB']:
+            ivbs = pitchers[pitcher]['SinkerIVB']
+            pitchers[pitcher]['SinkerAvgIVB'] = statistics.mean(ivbs)
+            pitchers[pitcher]['SinkerMaxIVB'] = max(ivbs)
+            pitchers[pitcher]['SinkerMinIVB'] = min(ivbs)
+        else:
+            pitchers[pitcher]['SinkerAvgIVB'] = 0
+            pitchers[pitcher]['SinkerMaxIVB'] = 0
+            pitchers[pitcher]['SinkerMinIVB'] = 0
+        # Calculate Slider IVB stats
+        if pitchers[pitcher]['SliderIVB']:
+            ivbs = pitchers[pitcher]['SliderIVB']
+            pitchers[pitcher]['SliderAvgIVB'] = statistics.mean(ivbs)
+            pitchers[pitcher]['SliderMaxIVB'] = max(ivbs)
+            pitchers[pitcher]['SliderMinIVB'] = min(ivbs)
+        else:
+            pitchers[pitcher]['SliderAvgIVB'] = 0
+            pitchers[pitcher]['SliderMaxIVB'] = 0
+            pitchers[pitcher]['SliderMinIVB'] = 0
+
+        # ---------- HORIZONTAL BREAK ----------
+
+        # Calculate Fastball HB stats
+        if pitchers[pitcher]['FastballHB']:
+            hbs = pitchers[pitcher]['FastballHB']
+            pitchers[pitcher]['FastballAvgHB'] = statistics.mean(hbs)
+            pitchers[pitcher]['FastballMaxHB'] = max(hbs)
+            pitchers[pitcher]['FastballMinHB'] = min(hbs)
+        else:
+            pitchers[pitcher]['FastballAvgHB'] = 0
+            pitchers[pitcher]['FastballMaxHB'] = 0
+            pitchers[pitcher]['FastballMinHB'] = 0
+
+        # Calculate Cutter HB stats
+        if pitchers[pitcher]['CutterHB']:
+            hbs = pitchers[pitcher]['CutterHB']
+            pitchers[pitcher]['CutterAvgHB'] = statistics.mean(hbs)
+            pitchers[pitcher]['CutterMaxHB'] = max(hbs)
+            pitchers[pitcher]['CutterMinHB'] = min(hbs)
+        else:
+            pitchers[pitcher]['CutterAvgHB'] = 0
+            pitchers[pitcher]['CutterMaxHB'] = 0   
+            pitchers[pitcher]['CutterMinHB'] = 0
+
+        # Calculate Sinker HB stats
+        if pitchers[pitcher]['SinkerHB']:
+            hbs = pitchers[pitcher]['SinkerHB']
+            pitchers[pitcher]['SinkerAvgHB'] = statistics.mean(hbs)
+            pitchers[pitcher]['SinkerMaxHB'] = max(hbs)
+            pitchers[pitcher]['SinkerMinHB'] = min(hbs)
+        else:
+            pitchers[pitcher]['SinkerAvgHB'] = 0
+            pitchers[pitcher]['SinkerMaxHB'] = 0
+            pitchers[pitcher]['SinkerMinHB'] = 0
+
+        # Calculate Slider HB stats
+        if pitchers[pitcher]['SliderHB']:
+            hbs = pitchers[pitcher]['SliderHB']
+            pitchers[pitcher]['SliderAvgHB'] = statistics.mean(hbs)
+            pitchers[pitcher]['SliderMaxHB'] = max(hbs)
+            pitchers[pitcher]['SliderMinHB'] = min(hbs)
+        else:
+            pitchers[pitcher]['SliderAvgHB'] = 0
+            pitchers[pitcher]['SliderMaxHB'] = 0
+            pitchers[pitcher]['SliderMinHB'] = 0
+
+        # ---------- SPIN RATE ----------
+
+        # Calculate Fastball Spin stats
+        if pitchers[pitcher]['FastballSpin']:
+            spins = pitchers[pitcher]['FastballSpin']
+            pitchers[pitcher]['FastballAvgSpin'] = statistics.mean(spins)
+            pitchers[pitcher]['FastballMaxSpin'] = max(spins)
+            pitchers[pitcher]['FastballMinSpin'] = min(spins)
+        else:
+            pitchers[pitcher]['FastballAvgSpin'] = 0
+            pitchers[pitcher]['FastballMaxSpin'] = 0
+            pitchers[pitcher]['FastballMinSpin'] = 0
+
+        # Calculate Cutter Spin stats
+        if pitchers[pitcher]['CutterSpin']:
+            spins = pitchers[pitcher]['CutterSpin']
+            pitchers[pitcher]['CutterAvgSpin'] = statistics.mean(spins)
+            pitchers[pitcher]['CutterMaxSpin'] = max(spins)
+            pitchers[pitcher]['CutterMinSpin'] = min(spins)
+        else:
+            pitchers[pitcher]['CutterAvgSpin'] = 0
+            pitchers[pitcher]['CutterMaxSpin'] = 0
+            pitchers[pitcher]['CutterMinSpin'] = 0
+
+        # Calculate Sinker Spin stats
+        if pitchers[pitcher]['SinkerSpin']:
+            spins = pitchers[pitcher]['SinkerSpin']
+            pitchers[pitcher]['SinkerAvgSpin'] = statistics.mean(spins)
+            pitchers[pitcher]['SinkerMaxSpin'] = max(spins)
+            pitchers[pitcher]['SinkerMinSpin'] = min(spins)
+        else:
+            pitchers[pitcher]['SinkerAvgSpin'] = 0
+            pitchers[pitcher]['SinkerMaxSpin'] = 0
+            pitchers[pitcher]['SinkerMinSpin'] = 0
+
+        # Calculate Slider Spin stats
+        if pitchers[pitcher]['SliderSpin']:
+            spins = pitchers[pitcher]['SliderSpin']
+            pitchers[pitcher]['SliderAvgSpin'] = statistics.mean(spins)
+            pitchers[pitcher]['SliderMaxSpin'] = max(spins)
+            pitchers[pitcher]['SliderMinSpin'] = min(spins)
+        else:
+            pitchers[pitcher]['SliderAvgSpin'] = 0
+            pitchers[pitcher]['SliderMaxSpin'] = 0
+            pitchers[pitcher]['SliderMinSpin'] = 0
+
+
+        # ---------- IN-ZONE % ----------
+
+        # Calculate Fastball In-Zone% stats
+        if pitchers[pitcher]['FastballsIZ'] > 0:
+            pitchers[pitcher]['FastballIZ%'] = (pitchers[pitcher]['FastballsIZ'] / pitchers[pitcher]['Fastballs']) * 100
+        else:
+            pitchers[pitcher]['FastballIZ%'] = 0
+
+        # Calculate Cutter In-Zone% stats
+        if pitchers[pitcher]['CuttersIZ'] > 0:
+            pitchers[pitcher]['CutterIZ%'] = (pitchers[pitcher]['CuttersIZ'] / pitchers[pitcher]['Cutters']) * 100
+        else:
+            pitchers[pitcher]['CutterIZ%'] = 0
+
+        # Calculate Sinker In-Zone% stats
+        if pitchers[pitcher]['SinkersIZ'] > 0:
+            pitchers[pitcher]['SinkerIZ%'] = (pitchers[pitcher]['SinkersIZ'] / pitchers[pitcher]['Sinkers']) * 100
+        else:
+            pitchers[pitcher]['SinkerIZ%'] = 0
+
+        # Calculate Slider In-Zone% stats
+        if pitchers[pitcher]['SlidersIZ'] > 0:
+            pitchers[pitcher]['SliderIZ%'] = (pitchers[pitcher]['SlidersIZ'] / pitchers[pitcher]['Sliders']) * 100
+        else:
+            pitchers[pitcher]['SliderIZ%'] = 0
+
+
+        # ---------- RELEASE HEIGHT ----------
+
+        # Calculate Fastball Release Height stats
+        if pitchers[pitcher]['FastballReleaseHeight']:
+            release_heights = pitchers[pitcher]['FastballReleaseHeight']
+            pitchers[pitcher]['FastballAvgReleaseHeight'] = statistics.mean(release_heights)
+        else:
+            pitchers[pitcher]['FastballAvgReleaseHeight'] = 0
+
+        # Calculate Cutter Release Height stats
+        if pitchers[pitcher]['CutterReleaseHeight']:
+            release_heights = pitchers[pitcher]['CutterReleaseHeight']
+            pitchers[pitcher]['CutterAvgReleaseHeight'] = statistics.mean(release_heights)
+        else:
+            pitchers[pitcher]['CutterAvgReleaseHeight'] = 0
+
+        # Calculate Sinker Release Height stats
+        if pitchers[pitcher]['SinkerReleaseHeight']:
+            release_heights = pitchers[pitcher]['SinkerReleaseHeight']
+            pitchers[pitcher]['SinkerAvgReleaseHeight'] = statistics.mean(release_heights)
+        else:
+            pitchers[pitcher]['SinkerAvgReleaseHeight'] = 0
+
+        # Calculate Slider Release Height stats
+        if pitchers[pitcher]['SliderReleaseHeight']:
+            release_heights = pitchers[pitcher]['SliderReleaseHeight']
+            pitchers[pitcher]['SliderAvgReleaseHeight'] = statistics.mean(release_heights)
+        else:
+            pitchers[pitcher]['SliderAvgReleaseHeight'] = 0
+
+
+        # ---------- EXTENSION ----------
+
+        # Calculate Fastball Extension stats
+        if pitchers[pitcher]['FastballExtension']:
+            extensions = pitchers[pitcher]['FastballExtension']
+            pitchers[pitcher]['FastballAvgExtension'] = statistics.mean(extensions)
+        else:
+            pitchers[pitcher]['FastballAvgExtension'] = 0
+
+        # Calculate Cutter Extension stats
+        if pitchers[pitcher]['CutterExtension']:
+            extensions = pitchers[pitcher]['CutterExtension']
+            pitchers[pitcher]['CutterAvgExtension'] = statistics.mean(extensions)
+        else:
+            pitchers[pitcher]['CutterAvgExtension'] = 0
+
+        # Calculate Sinker Extension stats
+        if pitchers[pitcher]['SinkerExtension']:
+            extensions = pitchers[pitcher]['SinkerExtension']
+            pitchers[pitcher]['SinkerAvgExtension'] = statistics.mean(extensions)
+        else:
+            pitchers[pitcher]['SinkerAvgExtension'] = 0
+
+        # Calculate Slider Extension stats
+        if pitchers[pitcher]['SliderExtension']:
+            extensions = pitchers[pitcher]['SliderExtension']
+            pitchers[pitcher]['SliderAvgExtension'] = statistics.mean(extensions)
+        else:
+            pitchers[pitcher]['SliderAvgExtension'] = 0
+
     return pitchers, team_runs, pitcher_teams
 
 # Function to assign wins and losses to pitchers
@@ -366,7 +838,7 @@ def assign_wins_losses(pitchers, team_runs, pitcher_teams):
 def print_pitching_stats(pitchers):
     for pitcher, stats in pitchers.items():
 
-        # ----- Simple Pitching Stats ----- #
+        # ---------- Simple Pitching Stats ---------- #
 
         earnedRuns = stats['EarnedRuns'] # Earned Runs
         IP = stats['InningsPitched'] # Innings Pitched
@@ -396,17 +868,16 @@ def print_pitching_stats(pitchers):
         OZSwings = stats['OZSwings'] # Swings Outside the Strike Zone
         OZWhiffs = stats['OZWhiffs'] # Whiffs Outside the Strike Zone
         OZPitches = stats['OZPitches'] # Pitches Outside the Strike Zone
-        Fastballs = stats['Fastballs'] # Fastballs
-        Cutters = stats['Cutters'] # Cutters
-        Sinkers = stats['Sinkers'] # Sinkers
-        Sliders = stats['Sliders'] # Sliders
+        Fastballs = stats['Fastballs'] # Fastball Count
+        Cutters = stats['Cutters'] # Cutter Count 
+        Sinkers = stats['Sinkers'] # Sinker Count
+        Sliders = stats['Sliders'] # Slider Count
         FBnVAA = stats['FBnVAA'] # Fastball normalized Vertical Approach Angle
         FBVAAUpper = stats['FBVAAUpper'] # Fastball Vertical Approach Angle in the Upper Zone
         FBVAAMid = stats['FBVAAMid'] # Fastball Vertical Approach Angle in the Middle Zone
         FBVAALower = stats['FBVAALower'] # Fastball Vertical Approach Angle in the Lower Zone
 
         # Additional Stats
-
         Kpercent = K / TBF * 100 if TBF > 0 else 0 # Strikeout Percentage
         BBpercent = BB / TBF * 100 if TBF > 0 else 0 # Walk Percentage
         fStrikePercent = fStrikes / TBF * 100 if TBF > 0 else 0 # First Pitch Strike Percentage
@@ -419,9 +890,87 @@ def print_pitching_stats(pitchers):
         IZWhiffPercent = IZWhiffs / IZSwings * 100 if IZSwings > 0 else 0 # Whiff Percentage Inside the Strike Zone
         ChasePercent = OZSwings / OZPitches * 100 if OZPitches > 0 else 0 # Chase Percentage
 
+        # Velocity Stats
+        FastballAvgVelo = stats['FastballAvgVelo']
+        FastballMaxVelo = stats['FastballMaxVelo']
+        FastballMinVelo = stats['FastballMinVelo']
+        CutterAvgVelo = stats['CutterAvgVelo']
+        CutterMaxVelo = stats['CutterMaxVelo']
+        CutterMinVelo = stats['CutterMinVelo']
+        SinkerAvgVelo = stats['SinkerAvgVelo']
+        SinkerMaxVelo = stats['SinkerMaxVelo']
+        SinkerMinVelo = stats['SinkerMinVelo']
+        SliderAvgVelo = stats['SliderAvgVelo']
+        SliderMaxVelo = stats['SliderMaxVelo']
+        SliderMinVelo = stats['SliderMinVelo']
+
+        # Induced Vertical Break Stats
+        FastballAvgIVB = stats['FastballAvgIVB']
+        FastballMaxIVB = stats['FastballMaxIVB']
+        FastballMinIVB = stats['FastballMinIVB']
+        CutterAvgIVB = stats['CutterAvgIVB']
+        CutterMaxIVB = stats['CutterMaxIVB']
+        CutterMinIVB = stats['CutterMinIVB']
+        SinkerAvgIVB = stats['SinkerAvgIVB']
+        SinkerMaxIVB = stats['SinkerMaxIVB']
+        SinkerMinIVB = stats['SinkerMinIVB']
+        SliderAvgIVB = stats['SliderAvgIVB']
+        SliderMaxIVB = stats['SliderMaxIVB']
+        SliderMinIVB = stats['SliderMinIVB']
+
+        # Horizontal Break Stats
+        FastballAvgHB = stats['FastballAvgHB']
+        FastballMaxHB = stats['FastballMaxHB']
+        FastballMinHB = stats['FastballMinHB']
+        CutterAvgHB = stats['CutterAvgHB']
+        CutterMaxHB = stats['CutterMaxHB']
+        CutterMinHB = stats['CutterMinHB']
+        SinkerAvgHB = stats['SinkerAvgHB']
+        SinkerMaxHB = stats['SinkerMaxHB']
+        SinkerMinHB = stats['SinkerMinHB']
+        SliderAvgHB = stats['SliderAvgHB']
+        SliderMaxHB = stats['SliderMaxHB']
+        SliderMinHB = stats['SliderMinHB']
+
+        # Spin Rate Stats
+        FastballAvgSpin = stats['FastballAvgSpin']
+        FastballMaxSpin = stats['FastballMaxSpin']
+        FastballMinSpin = stats['FastballMinSpin']
+        CutterAvgSpin = stats['CutterAvgSpin']
+        CutterMaxSpin = stats['CutterMaxSpin']
+        CutterMinSpin = stats['CutterMinSpin']
+        SinkerAvgSpin = stats['SinkerAvgSpin']
+        SinkerMaxSpin = stats['SinkerMaxSpin']
+        SinkerMinSpin = stats['SinkerMinSpin']
+        SliderAvgSpin = stats['SliderAvgSpin']
+        SliderMaxSpin = stats['SliderMaxSpin']
+        SliderMinSpin = stats['SliderMinSpin']
+
+        # In-Zone Percentage Stats
+        FastballsIZ = stats['FastballsIZ']
+        FastballIZPercent = stats['FastballIZ%']
+        CuttersIZ = stats['CuttersIZ']
+        CutterIZPercent = stats['CutterIZ%']
+        SinkersIZ = stats['SinkersIZ']
+        SinkerIZPercent = stats['SinkerIZ%']
+        SlidersIZ = stats['SlidersIZ']
+        SliderIZPercent = stats['SliderIZ%']
+
+        # Release Height Stats
+        FastballAvgReleaseHeight = stats['FastballAvgReleaseHeight']
+        CutterAvgReleaseHeight = stats['CutterAvgReleaseHeight']
+        SinkerAvgReleaseHeight = stats['SinkerAvgReleaseHeight']
+        SliderAvgReleaseHeight = stats['SliderAvgReleaseHeight']
+
+        # Extension Stats
+        FastballAvgExtension = stats['FastballAvgExtension']
+        CutterAvgExtension = stats['CutterAvgExtension']
+        SinkerAvgExtension = stats['SinkerAvgExtension']
+        SliderAvgExtension = stats['SliderAvgExtension']
+
         # --------------- Display Pitching Stats --------------- #
 
-        print(f"Pitcher: {pitcher}")
+        print(f"~~~~~~~~~~ Pitcher: {pitcher} ~~~~~~~~~~")
         print(f"W-L: {W}-{L}")
         print(f"Earned Runs: {earnedRuns}, Innings Pitched: {IP:.2f}, TBF: {TBF}")
         print(f"ERA: {ERA:.2f}")
@@ -439,8 +988,43 @@ def print_pitching_stats(pitchers):
         print(f"Called Strikes: {CalledStrikes}, CSW%: {CSWPercent:.2f}%")
         print(f"In-Zone Swings: {IZSwings}, In-Zone Whiffs: {IZWhiffs}, IZWhiff%: {IZWhiffPercent:.2f}%")
         print(f"Out-Zone Swings: {OZSwings}, Out-Zone Pitches: {OZPitches}, Chase%: {ChasePercent:.2f}%")
-        print(f"Fastballs: {Fastballs}, Cutters: {Cutters}, Sinkers: {Sinkers}, Sliders: {Sliders}")
         print(f"FB nVAA: {FBnVAA:.2f}, FB VAA Upper: {FBVAAUpper:.2f}, FB VAA Mid: {FBVAAMid:.2f}, FB VAA Lower: {FBVAALower:.2f}")
+        # Fastball Stats
+        print(f"*********************")
+        print(f"Fastballs: {Fastballs}")
+        print(f"Avg Velo: {FastballAvgVelo:.2f}, Max Velo: {FastballMaxVelo:.2f}, Min Velo: {FastballMinVelo:.2f}")
+        print(f"Avg IVB: {FastballAvgIVB:.2f}, Max IVB: {FastballMaxIVB:.2f}, Min IVB: {FastballMinIVB:.2f}")
+        print(f"Avg HB: {FastballAvgHB:.2f}, Max HB: {FastballMaxHB:.2f}, Min HB: {FastballMinHB:.2f}")
+        print(f"Avg Spin: {FastballAvgSpin:.2f}, Max Spin: {FastballMaxSpin:.2f}, Min Spin: {FastballMinSpin:.2f}")
+        print(f"In-Zone: {FastballsIZ}, In-Zone%: {FastballIZPercent:.2f}%")
+        print(f"Avg Release Height: {FastballAvgReleaseHeight:.2f}, Avg Extension: {FastballAvgExtension:.2f}")
+        print(f"*********************")
+        # Cutter Stats
+        print(f"Cutters: {Cutters}")
+        print(f"Avg Velo: {CutterAvgVelo:.2f}, Max Velo: {CutterMaxVelo:.2f}, Min Velo: {CutterMinVelo:.2f}")
+        print(f"Avg IVB: {CutterAvgIVB:.2f}, Max IVB: {CutterMaxIVB:.2f}, Min IVB: {CutterMinIVB:.2f}")
+        print(f"Avg HB: {CutterAvgHB:.2f}, Max HB: {CutterMaxHB:.2f}, Min HB: {CutterMinHB:.2f}")
+        print(f"Avg Spin: {CutterAvgSpin:.2f}, Max Spin: {CutterMaxSpin:.2f}, Min Spin: {CutterMinSpin:.2f}")
+        print(f"In-Zone: {CuttersIZ}, In-Zone%: {CutterIZPercent:.2f}%")
+        print(f"Avg Release Height: {CutterAvgReleaseHeight:.2f}, Avg Extension: {CutterAvgExtension:.2f}")
+        print(f"*********************")
+        #Sinker Stats
+        print(f"Sinkers: {Sinkers}")
+        print(f"Avg Velo: {SinkerAvgVelo:.2f}, Max Velo: {SinkerMaxVelo:.2f}, Min Velo: {SinkerMinVelo:.2f}")
+        print(f"Avg IVB: {SinkerAvgIVB:.2f}, Max IVB: {SinkerMaxIVB:.2f}, Min IVB: {SinkerMinIVB:.2f}")
+        print(f"Avg HB: {SinkerAvgHB:.2f}, Max HB: {SinkerMaxHB:.2f}, Min HB: {SinkerMinHB:.2f}")
+        print(f"Avg Spin: {SinkerAvgSpin:.2f}, Max Spin: {SinkerMaxSpin:.2f}, Min Spin: {SinkerMinSpin:.2f}")
+        print(f"In-Zone: {SinkersIZ}, In-Zone%: {SinkerIZPercent:.2f}%")
+        print(f"Avg Release Height: {SinkerAvgReleaseHeight:.2f}, Avg Extension: {SinkerAvgExtension:.2f}")
+        print(f"*********************")
+        # Slider Stats
+        print(f"Sliders: {Sliders}")
+        print(f"Avg Velo: {SliderAvgVelo:.2f}, Max Velo: {SliderMaxVelo:.2f}, Min Velo: {SliderMinVelo:.2f}")
+        print(f"Avg IVB: {SliderAvgIVB:.2f}, Max IVB: {SliderMaxIVB:.2f}, Min IVB: {SliderMinIVB:.2f}")
+        print(f"Avg HB: {SliderAvgHB:.2f}, Max HB: {SliderMaxHB:.2f}, Min HB: {SliderMinHB:.2f}")
+        print(f"Avg Spin: {SliderAvgSpin:.2f}, Max Spin: {SliderMaxSpin:.2f}, Min Spin: {SliderMinSpin:.2f}")
+        print(f"In-Zone: {SlidersIZ}, In-Zone%: {SliderIZPercent:.2f}%")
+        print(f"Avg Release Height: {SliderAvgReleaseHeight:.2f}, Avg Extension: {SliderAvgExtension:.2f}")
         print()
 
 # -------------------- MAIN FUNCTION -------------------- #
