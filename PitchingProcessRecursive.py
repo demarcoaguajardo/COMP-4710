@@ -523,7 +523,8 @@ def find_all_csv_files(directory_path):
 def contains_aub_prc(data):
     for row in data:
         pitcher_team = row.get('PitcherTeam', '')
-        if pitcher_team == 'AUB_PRC':
+        batter_team = row.get('BatterTeam', '')
+        if pitcher_team == 'AUB_PRC' or batter_team == 'AUB_PRC':
             return True
     return False
 
@@ -556,7 +557,7 @@ def process_all_csv_files(directory_path, output_file):
         if data is not None:
             # Check if file contains AUB_PRC as pitching team
             if contains_aub_prc(data):
-                print(f"Excluded: {relative_path} (contains AUB_PRC as pitching team)")
+                print(f"Excluded: {relative_path} (contains AUB_PRC as pitcher or batter team)")
                 files_excluded += 1
                 continue
                 
