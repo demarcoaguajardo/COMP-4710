@@ -410,11 +410,10 @@ def plot_combined_profile_and_summary(pitchers, pitcher_name, all_data):
 
 
 if __name__ == "__main__":
-   file_path = "/content/20220218-VATech-1(in).csv"
-   data = read_csv(file_path)
-   if data is None:
-       print("Could not read CSV data.")
-   else:
+    file_path = input("Enter the path to the CSV file: ")
+    data = read_csv(file_path)
+    
+    if data is not None:
        pitchers = calculate_pitch_stats(data)
       
        output_dir = "pitcher_reports6"
@@ -430,3 +429,6 @@ if __name__ == "__main__":
            print(f"Saved report to {filepath}")
       
        print("Reports generated for all pitchers.")
+    
+    else:
+        print("Failed to read the CSV file.")
