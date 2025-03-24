@@ -76,7 +76,7 @@ def calculate_pitching_stats(data):
         plate_loc_height = float (row['PlateLocHeight']) if 'PlateLocHeight' in row else 0
         tagged_pitch_type = row['TaggedPitchType']
         vert_appr_angle = float(row['VertApprAngle']) if 'VertApprAngle' in row else 0
-        effective_velocity = float(row['EffectiveVelo']) if 'EffectiveVelo' in row else 0
+        rel_speed = float(row['RelSpeed']) if 'RelSpeed' in row else 0
         induced_vert_break = float(row['InducedVertBreak']) if 'InducedVertBreak' in row else 0
         horz_break = float(row['HorzBreak']) if 'HorzBreak' in row else 0
         try: # Had to make try/except block because some spin rates were empty strings
@@ -265,8 +265,8 @@ def calculate_pitching_stats(data):
             fastball_vert_appr_anngles[pitcher_name].append(vert_appr_angle)
 
             # Track Velocity
-            if effective_velocity > 0: 
-                pitchers[pitcher_name]['FastballVelo'].append(effective_velocity)
+            if rel_speed > 0: 
+                pitchers[pitcher_name]['FastballVelo'].append(rel_speed)
             # Track Induced Vertical Break
             if induced_vert_break != 0:
                 pitchers[pitcher_name]['FastballIVB'].append(induced_vert_break)
@@ -292,8 +292,8 @@ def calculate_pitching_stats(data):
             pitchers[pitcher_name]['Cutters'] += 1
 
             # Track Velocity
-            if effective_velocity > 0: 
-                pitchers[pitcher_name]['CutterVelo'].append(effective_velocity)
+            if rel_speed > 0: 
+                pitchers[pitcher_name]['CutterVelo'].append(rel_speed)
             # Track Induced Vertical Break
             if induced_vert_break != 0:
                 pitchers[pitcher_name]['CutterIVB'].append(induced_vert_break)
@@ -319,8 +319,8 @@ def calculate_pitching_stats(data):
             pitchers[pitcher_name]['Sinkers'] += 1
 
             # Track Velocity
-            if effective_velocity > 0: 
-                pitchers[pitcher_name]['SinkerVelo'].append(effective_velocity)
+            if rel_speed > 0: 
+                pitchers[pitcher_name]['SinkerVelo'].append(rel_speed)
             # Track Induced Vertical Break
             if induced_vert_break != 0:
                 pitchers[pitcher_name]['SinkerIVB'].append(induced_vert_break)
@@ -346,8 +346,8 @@ def calculate_pitching_stats(data):
             pitchers[pitcher_name]['Sliders'] += 1
 
             # Track Velocity
-            if effective_velocity > 0: 
-                pitchers[pitcher_name]['SliderVelo'].append(effective_velocity)
+            if rel_speed > 0: 
+                pitchers[pitcher_name]['SliderVelo'].append(rel_speed)
             # Track Induced Vertical Break
             if induced_vert_break != 0:
                 pitchers[pitcher_name]['SliderIVB'].append(induced_vert_break)
