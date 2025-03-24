@@ -518,7 +518,6 @@ def find_all_csv_files(directory_path):
     
     return csv_files
 
-# Function to process all CSV files in a directory and its subdirectories
 # Function to check if file contains AUB_PRC as a pitching team
 def contains_aub_prc(data):
     for row in data:
