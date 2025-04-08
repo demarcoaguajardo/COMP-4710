@@ -32,6 +32,19 @@ MID_ZONE_MIN = STRIKE_ZONE['height_min'] + (STRIKE_ZONE_HEIGHT / 3)
 LOWER_ZONE_MAX = MID_ZONE_MIN
 LOWER_ZONE_MIN = STRIKE_ZONE['height_min']
 
+# Define constants for wOBA calculation based on 2024 season
+# Values found on https://www.fangraphs.com/guts.aspx?type=cn
+wOBA_AVG = 0.310
+wOBA_SCALE = 1.24
+wOBA_WEIGHTS = {
+    'BB': 0.69,
+    'HBP': 0.72,
+    '1B': 0.88,
+    '2B': 1.25,
+    '3B': 1.59,
+    'HR': 2.05
+}
+
 # Unified player stats dictionary
 players = defaultdict(lambda: {"PitchingStats": {}, "BattingStats": {}})
 
@@ -93,7 +106,10 @@ def calculate_pitching_stats(data, players):
         release_height = float(row['RelHeight']) if 'RelHeight' in row else 0
         extension = float(row['Extension']) if 'Extension' in row else 0
 
-        # Initialize stats for each pitcher in players
+        # Initialize stats for each player in players
+        if pitcher_name not in players:
+            players[pitcher_name] = {"PitchingStats": {}, "BattingStats": {}}
+
         if "PitchingStats" not in players[pitcher_name] or not players[pitcher_name]["PitchingStats"]:
             players[pitcher_name]["PitchingStats"] = {
                 'EarnedRuns': 0,
@@ -229,6 +245,27 @@ def calculate_pitching_stats(data, players):
                 'SliderAvgReleaseHeight': 0,
                 'SliderExtension': [],
                 'SliderAvgExtension': 0
+            }
+
+        if "BattingStats" not in players[pitcher_name] or not players[pitcher_name]["BattingStats"]:
+            players[pitcher_name]["BattingStats"] = {
+                'ExitSpeeds': [],
+                'Angles': [],
+                'PA': 0,
+                '1B': 0,
+                '2B': 0,
+                '3B': 0,
+                'HR': 0,
+                'H': 0,
+                'TB': 0,
+                'K': 0,
+                'BB': 0,
+                'HBP': 0,
+                'SH': 0,
+                'SF': 0,
+                'AB': 0,
+                'RBI': 0,
+                'GDP': 0,
             }
 
         # # Track total pitches thrown
@@ -841,6 +878,337 @@ def print_pitching_stats(players):
         print(f"Avg Release Height: {SliderAvgReleaseHeight:.2f}, Avg Extension: {SliderAvgExtension:.2f}")
         print()
 
+# Function to calculate hitting stats
+def calculate_hitting_stats(data, players):
+    plate_appearances = set()
+
+    # Iterate through the data
+    for row in data: 
+        game_id = row['GameID']
+        batter_name = row['Batter']
+        play_result = row['PlayResult']
+        hit_type = row['TaggedHitType']
+        korbb = row['KorBB']
+        pitch_call = row['PitchCall']
+        runs_scored = int(row['RunsScored']) if 'RunsScored' in row else 0
+        outs_on_play = int(row['OutsOnPlay']) if 'OutsOnPlay' in row else 0
+        pa_of_inning = row['PAofInning']
+        inning = row['Inning']
+        inning_half = row['Top/Bottom']
+
+        # Safely convert exit speed and launch angle to float
+        try:
+            exit_speed = float(row['ExitSpeed']) if 'ExitSpeed' in row else 0
+        except ValueError:
+            exit_speed = 0
+
+        try:
+            launch_angle = float(row['Angle']) if 'Angle' in row else 0
+        except ValueError:
+            launch_angle = 0
+
+        # Initialize stats for each batter in players
+        if batter_name not in players:
+            players[batter_name] = {"PitchingStats": {}, "BattingStats": {}}
+
+        # Initialize stats for each batter in players
+        if "BattingStats" not in players[batter_name] or not players[batter_name]["BattingStats"]:
+            players[batter_name]["BattingStats"] = {
+                'ExitSpeeds': [],
+                'Angles': [],
+                'PA': 0,
+                '1B': 0,
+                '2B': 0,
+                '3B': 0,
+                'HR': 0,
+                'H': 0,
+                'TB': 0,
+                'K': 0,
+                'BB': 0,
+                'HBP': 0,
+                'SH': 0,
+                'SF': 0,
+                'AB': 0,
+                'RBI': 0,
+                'GDP': 0,
+                'AvgExitVelocity': 0,
+                'AvgLaunchAngle': 0
+            }
+        
+        if "PitchingStats" not in players[batter_name] or not players[batter_name]["PitchingStats"]:
+            players[batter_name]["PitchingStats"] = {
+                'EarnedRuns': 0,
+                'InningsPitched': 0,
+                'OutsRecorded': 0,
+                'ERA': 0,
+                'Wins': 0,
+                'Losses': 0,
+                'Strikeouts': 0,
+                'Walks': 0,
+                'TotalBattersFaced': 0,
+                'FirstPitchStrikes': 0,
+                'FirstPitchBalls': 0,
+                'TotalPitches': 0,
+                'Strikes': 0,
+                'Balls': 0,
+                'HitBatters': 0,
+                'FoulsAfter2Strikes': 0,
+                'First2of3StrikesOrInPlay': 0,
+                'AtBatEfficiency': 0,
+                'HomeRuns': 0,
+                'FIP': 0,
+                'Swings': 0,
+                'Whiffs': 0,
+                'CalledStrikes': 0,
+                'IZSwings': 0,
+                'IZWhiffs': 0,
+                'IZPitches': 0,
+                'OZSwings': 0,
+                'OZWhiffs': 0,
+                'OZPitches': 0,
+                'FBVertApprAngles': [],
+                'FBnVAA': 0,
+                'UpperZonePitches': 0,
+                'MidZonePitches': 0,
+                'LowerZonePitches': 0,
+                'FBVAAUpper': 0,
+                'FBVAAMid': 0,
+                'FBVAALower': 0,
+                # Fastball
+                'Fastballs': 0,
+                'FastballIZ': 0,
+                'FastballIZ%': 0,
+                'FastballVelo': [],
+                'FastballAvgVelo': 0,
+                'FastballMaxVelo': 0,
+                'FastballMinVelo': 0,
+                'FastballIVB': [],
+                'FastballAvgIVB': 0,
+                'FastballMaxIVB': 0,
+                'FastballMinIVB': 0,
+                'FastballHB': [],
+                'FastballAvgHB': 0,
+                'FastballMaxHB': 0,
+                'FastballMinHB': 0,
+                'FastballSpin': [],
+                'FastballAvgSpin': 0,
+                'FastballMaxSpin': 0,
+                'FastballMinSpin': 0,
+                'FastballReleaseHeight': [],
+                'FastballAvgReleaseHeight': 0,
+                'FastballExtension': [],
+                'FastballAvgExtension': 0,
+                # Cutter
+                'Cutters': 0,
+                'CutterIZ': 0,
+                'CutterIZ%': 0,
+                'CutterVelo': [],
+                'CutterAvgVelo': 0,
+                'CutterMaxVelo': 0,
+                'CutterMinVelo': 0,
+                'CutterIVB': [],
+                'CutterAvgIVB': 0,
+                'CutterMaxIVB': 0,
+                'CutterMinIVB': 0,
+                'CutterHB': [],
+                'CutterAvgHB': 0,
+                'CutterMaxHB': 0,
+                'CutterMinHB': 0,
+                'CutterSpin': [],
+                'CutterAvgSpin': 0,
+                'CutterMaxSpin': 0,
+                'CutterMinSpin': 0,
+                'CutterReleaseHeight': [],
+                'CutterAvgReleaseHeight': 0,
+                'CutterExtension': [],
+                'CutterAvgExtension': 0,
+                # Sinker
+                'Sinkers': 0,
+                'SinkerIZ': 0,
+                'SinkerIZ%': 0,
+                'SinkerVelo': [],
+                'SinkerAvgVelo': 0,
+                'SinkerMaxVelo': 0,
+                'SinkerMinVelo': 0,
+                'SinkerIVB': [],
+                'SinkerAvgIVB': 0,
+                'SinkerMaxIVB': 0,
+                'SinkerMinIVB': 0,
+                'SinkerHB': [],
+                'SinkerAvgHB': 0,
+                'SinkerMaxHB': 0,
+                'SinkerMinHB': 0,
+                'SinkerSpin': [],
+                'SinkerAvgSpin': 0,
+                'SinkerMaxSpin': 0,
+                'SinkerMinSpin': 0,
+                'SinkerReleaseHeight': [],
+                'SinkAvgReleaseHeight': 0,
+                'SinkerExtension': [],
+                'SinkerAvgExtension': 0,
+                # Slider
+                'Sliders': 0,
+                'SliderIZ': 0,
+                'SliderIZ%': 0,
+                'SliderVelo': [],
+                'SliderAvgVelo': 0,
+                'SliderMaxVelo': 0,
+                'SliderMinVelo': 0,
+                'SliderIVB': [],
+                'SliderAvgIVB': 0,
+                'SliderMaxIVB': 0,
+                'SliderMinIVB': 0,
+                'SliderHB': [],
+                'SliderAvgHB': 0,
+                'SliderMaxHB': 0,
+                'SliderMinHB': 0,
+                'SliderSpin': [],
+                'SliderAvgSpin': 0,
+                'SliderMaxSpin': 0,
+                'SliderMinSpin': 0,
+                'SliderReleaseHeight': [],
+                'SliderAvgReleaseHeight': 0,
+                'SliderExtension': [],
+                'SliderAvgExtension': 0
+            }
+
+        batting_stats = players[batter_name]["BattingStats"]
+
+        # Append exit speed and launch angle to the batter's list to get avgs.
+        if exit_speed != 0:
+            batting_stats['ExitSpeeds'].append(exit_speed)
+        if launch_angle != 0:
+            batting_stats['Angles'].append(launch_angle)
+
+        # Create a unique identifier for each batter's plate appearance
+        pa_identifier = (game_id, batter_name, inning, inning_half, pa_of_inning)
+
+        # Check if this is a new plate appearance
+        if pa_identifier not in plate_appearances:
+            plate_appearances.add(pa_identifier)
+            batting_stats['PA'] += 1
+
+        # Plays and correlated stats
+        if play_result == 'Single':
+            batting_stats['1B'] += 1 # Single
+            batting_stats['H'] += 1 # Hit
+            batting_stats['TB'] += 1 # Total Bases
+        elif play_result == 'Double':
+            batting_stats['2B'] += 1 # Double
+            batting_stats['H'] += 1
+            batting_stats['TB'] += 2
+        elif play_result == 'Triple':
+            batting_stats['3B'] += 1 # Triple
+            batting_stats['H'] += 1
+            batting_stats['TB'] += 3
+        elif play_result == 'HomeRun':
+            batting_stats['HR'] += 1 # Home Run
+            batting_stats['H'] += 1 
+            batting_stats['TB'] += 4 
+        elif play_result == 'Sacrifice':
+            if hit_type == 'Bunt':
+                batting_stats['SH'] += 1
+            elif hit_type in ['FlyBall', 'Popup']: 
+                batting_stats['SF'] += 1
+
+        if korbb == 'Strikeout':
+            batting_stats['K'] += 1 # Strikeout
+            batting_stats['AB'] += 1 # Strikeout counts as AB
+        elif korbb == 'Walk':
+            batting_stats['BB'] += 1 # Walk
+
+        if pitch_call == 'HitByPitch':
+            batting_stats['HBP'] += 1 # Hit By Pitch
+        
+        # Increment AB based on definition
+        # AB = Batter reaches base via fielder's choice, hit, or error,
+        # or non-sacrifice out.
+        if play_result in ['Single', 'Double', 'Triple', 'HomeRun', 'Error',
+                     'FieldersChoice', 'Out'] and play_result != 'Sacrifice':
+            batting_stats['AB'] += 1
+
+        # Increment RBI based on the definition
+        # RBI = Result of PA is run scored, excluding errors and ground double plays
+        if play_result not in ['Error', 'FieldersChoice'] and not (play_result == 'Out' and hit_type == 'GroundBall' and outs_on_play == 2):
+            batting_stats['RBI'] += runs_scored
+        elif play_result == 'Sacrifice':
+            batting_stats['RBI'] += runs_scored # Sacrifice fly or hit
+        if korbb == 'Walk' and runs_scored > 0:
+            batting_stats['RBI'] += runs_scored # Bases-loaded walk
+        if pitch_call == 'HitByPitch' and runs_scored > 0:
+            batting_stats['RBI'] += runs_scored # Bases-loaded hit by pitch
+
+        # Check for Ground into Double Play (GDP)
+        if play_result == 'Out' and hit_type == 'GroundBall' and outs_on_play == 2:
+            batting_stats['GDP'] += 1 # Ground into Double Play
+
+        # Calculate Average Exit Velocity and Average Launch Angle for each batter
+        for batter_name, stats in players.items():
+            batting_stats = stats["BattingStats"]
+
+            exit_speeds = batting_stats['ExitSpeeds']
+            angles = batting_stats['Angles']
+            
+            avg_exit_velocity = sum(exit_speeds) / len(exit_speeds) if exit_speeds else 0
+            avg_launch_angle = sum(angles) / len(angles) if angles else 0
+            
+            batting_stats['AvgExitVelocity'] = avg_exit_velocity
+            batting_stats['AvgLaunchAngle'] = avg_launch_angle
+
+    return players
+
+# Function that prints pitching stats
+def print_hitting_stats(players):
+    for batter_name, stats in players.items():
+        batting_stats = stats["BattingStats"]
+
+        # ---------- Simple Hitting Stats ---------- #
+        PA = batting_stats['PA'] # Plate Appearances
+        AB = batting_stats['AB'] # At Bats
+        H = batting_stats['H'] # Hits
+        K = batting_stats['K'] # Strikeouts
+        BB = batting_stats['BB'] # Walks
+        HBP = batting_stats['HBP'] # Hit By Pitch
+        SH = batting_stats['SH'] # Sacrifice Hits
+        SF = batting_stats['SF'] # Sacrifice Flies
+        TB = batting_stats['TB'] # Total Bases
+        oneB = batting_stats['1B'] # Singles
+        twoB = batting_stats['2B'] # Doubles
+        threeB = batting_stats['3B'] # Triples
+        HR = batting_stats['HR'] # Home Runs
+        RBI = batting_stats['RBI'] # Runs Batted In
+        GDP = batting_stats['GDP'] # Ground into Double Play
+        
+        # Additional Stats
+        AVG = H / AB if AB > 0 else 0 # Batting Average
+        BBpercent = BB / PA * 100 if PA > 0 else 0 # Walk Percentage
+        Kpercent = K / PA * 100 if PA > 0 else 0 # Strikeout Percentage
+
+        # Advanced Stats
+        OBP = (H + BB + HBP) / (AB + BB + HBP + SF) if (AB + BB + HBP + SF) > 0 else 0 # On Base Percentage
+        SLG = TB / AB if AB > 0 else 0 # Slugging Percentage
+        OPS = (OBP + SLG) # On Base Plus Slugging Percentage
+        ISO = SLG - AVG # Isolated Power
+        BABIP = (H - HR) / (AB - K - HR + SF) if (AB - K - HR + SF) > 0 else 0 # Batting Average on Balls in Play
+        wOBA = ((wOBA_WEIGHTS['BB'] * BB) +
+                (wOBA_WEIGHTS['HBP'] * HBP) +
+                (wOBA_WEIGHTS['1B'] * oneB) +
+                (wOBA_WEIGHTS['2B'] * twoB) +
+                (wOBA_WEIGHTS['3B'] * threeB) +
+                (wOBA_WEIGHTS['HR'] * HR)) / (
+                    AB + BB + HBP + SF
+                ) if (AB + BB + HBP + SF) > 0 else 0 # Weighted On Base Average
+
+        # --------------- Display Hitting Stats ---------------#
+        print(f"Batter: {batter_name}")
+        print(f"PA: {PA}, AB: {AB}, H: {H}, TB: {TB}")
+        print(f"1B: {oneB}, 2B: {twoB}, 3B: {threeB}, HR: {HR}")
+        print(f"RBI: {RBI}, BB: {BB}, K: {K}, HBP: {HBP}, SF: {SF}, SH: {SH}, GDP: {GDP}")
+        print(f"AVG: {AVG:.2f}, BB%: {BBpercent:.2f}%, K%: {Kpercent:.2f}%")
+        print(f"OBP: {OBP:.2f}, SLG: {SLG:.2f}, OPS: {OPS:.2f}, ISO: {ISO:.2f}, BABIP: {BABIP:.2f}, wOBA: {wOBA:.2f}")
+        print(f"Avg Exit Velocity: {batting_stats['AvgExitVelocity']:.2f} MPH, Avg Launch Angle: {batting_stats['AvgLaunchAngle']:.2f} degrees")
+        print()
+
 # -------------------- MAIN FUNCTION -------------------- #
 if __name__ == "__main__":
     file_path = input("Enter the path to the CSV file: ")
@@ -852,22 +1220,31 @@ if __name__ == "__main__":
         print("File found successfully! Opening now...")
         print()
 
-        # ---------- PITCHING STATS ---------- #
+        # ----- PITCHING STATS ----- #
 
         # Calculate pitching stats
         players, team_runs, pitcher_teams = calculate_pitching_stats(data, players)
+        # DEBUG
+        #print("Players after calculate_pitching_stats:")
+        #for player, stats in players.items():
+            #print(f"{player}: {stats}")
+
         # Assign wins and losses
         assign_wins_losses(players, team_runs, pitcher_teams)
         # Print pitching stats
         print_pitching_stats(players)
 
-        # ---------- HITTING STATS ---------- #
+        # ----- HITTING STATS ----- #
 
         # Calculate hitting stats
-        # TODO
+        players = calculate_hitting_stats(data, players)
+        # DEBUG
+        #print("Players after calculate_hitting_stats:")
+        #for player, stats in players.items():
+            #print(f"{player}: {stats}")
 
         # Print hitting stats
-        # TODO
+        print_hitting_stats(players)
 
     else:
         print("Failed to read the CSV file.")
