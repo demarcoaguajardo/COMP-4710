@@ -1440,7 +1440,7 @@ if __name__ == "__main__":
 
         # Extract GameID from first row of dataset
         game_id = data[0]['GameID'] if 'GameID' in data[0] else "unknown_game"
-        output_file = f"{game_id}_player_stats_SIMPLIFIED.csv" # Use GameID to name output file
+        output_file = f"{game_id}_player_stats.csv" # Use GameID to name output file
 
         # ----- PITCHING STATS ----- #
 
