@@ -740,6 +740,19 @@ def print_pitching_stats(players):
         IZWhiffPercent = IZWhiffs / IZSwings * 100 if IZSwings > 0 else 0 # Whiff Percentage Inside the Strike Zone
         ChasePercent = OZSwings / OZPitches * 100 if OZPitches > 0 else 0 # Chase Percentage
 
+        # Store calculated stats in PitchingStats dictionary
+        pitching_stats['Strikeout%'] = Kpercent
+        pitching_stats['Walk%'] = BBpercent
+        pitching_stats['FirstPitchStrike%'] = fStrikePercent
+        pitching_stats['FirstPitchBall%'] = fBallPercent
+        pitching_stats['Strike%'] = strikePercent
+        pitching_stats['Ball%'] = ballPercent
+        pitching_stats['AtBatEfficiency%'] = AtBatEfficiencyPercent
+        pitching_stats['Whiff%'] = WhiffPercent
+        pitching_stats['CSW%'] = CSWPercent
+        pitching_stats['IZWhiff%'] = IZWhiffPercent
+        pitching_stats['Chase%'] = ChasePercent
+
         # Velocity Stats
         FastballAvgVelo = pitching_stats['FastballAvgVelo']
         FastballMaxVelo = pitching_stats['FastballMaxVelo']
@@ -1198,6 +1211,17 @@ def print_hitting_stats(players):
                 (wOBA_WEIGHTS['HR'] * HR)) / (
                     AB + BB + HBP + SF
                 ) if (AB + BB + HBP + SF) > 0 else 0 # Weighted On Base Average
+        
+        # Store calculated stats in BattingStats dictionary
+        batting_stats['AVG'] = AVG
+        batting_stats['BB%'] = BBpercent
+        batting_stats['K%'] = Kpercent
+        batting_stats['OBP'] = OBP
+        batting_stats['SLG'] = SLG
+        batting_stats['OPS'] = OPS
+        batting_stats['ISO'] = ISO
+        batting_stats['BABIP'] = BABIP
+        batting_stats['wOBA'] = wOBA
 
         # --------------- Display Hitting Stats ---------------#
         print(f"Batter: {batter_name}")
@@ -1209,6 +1233,200 @@ def print_hitting_stats(players):
         print(f"Avg Exit Velocity: {batting_stats['AvgExitVelocity']:.2f} MPH, Avg Launch Angle: {batting_stats['AvgLaunchAngle']:.2f} degrees")
         print()
 
+# Function that generates a CSV file with the players' stats
+def generate_csv(players, output_file):
+    # Define specific headers for pitching and batting stats
+    headers = [
+        "PlayerName",  # Player's name
+        # Pitching Stats
+        "W-L", "EarnedRuns", "InningsPitched", "TBF", "ERA", "TotalPitches",
+        "Strikes", "Balls", "FoulsAfter2Strikes", "HitBatters", "Strike%", "Ball%",
+        "FirstPitchStrikes", "FirstPitchBalls", "FirstPitchStrike%", "FirstPitchBall%",
+        "First2of3StrikesOrInPlay", "AtBatEfficiency", "AtBatEfficiency%", "Strikeouts",
+        "Walks", "HomeRuns", "Strikeout%", "Walk%", "FIP", "Swings", "Whiffs", "Whiff%",
+        "CalledStrikes", "CSW%", "InZoneSwings", "InZoneWhiffs", "IZWhiff%", "OutZoneSwings",
+        "OutZonePitches", "Chase%", "FBnVAA", "FBVAAUpper", "FBVAAMid", "FBVAALower",
+        # Fastball Stats
+        "Fastballs", "FastballAvgVelo", "FastballMaxVelo", "FastballMinVelo", "FastballAvgIVB",
+        "FastballMaxIVB", "FastballMinIVB", "FastballAvgHB", "FastballMaxHB", "FastballMinHB",
+        "FastballAvgSpin", "FastballMaxSpin", "FastballMinSpin", "FastballInZone", "FastballInZone%",
+        "FastballAvgReleaseHeight", "FastballAvgExtension", 
+        # Cutter Stats
+        "Cutters", "CutterAvgVelo", "CutterMaxVelo", "CutterMinVelo", "CutterAvgIVB",
+        "CutterMaxIVB", "CutterMinIVB", "CutterAvgHB", "CutterMaxHB", "CutterMinHB",
+        "CutterAvgSpin", "CutterMaxSpin", "CutterMinSpin", "CutterInZone", "CutterInZone%",
+        "CutterAvgReleaseHeight", "CutterAvgExtension",
+        # Sinker Stats
+        "Sinkers", "SinkerAvgVelo", "SinkerMaxVelo", "SinkerMinVelo", "SinkerAvgIVB",
+        "SinkerMaxIVB", "SinkerMinIVB", "SinkerAvgHB", "SinkerMaxHB", "SinkerMinHB",
+        "SinkerAvgSpin", "SinkerMaxSpin", "SinkerMinSpin", "SinkerInZone", "SinkerInZone%",
+        "SinkerAvgReleaseHeight", "SinkerAvgExtension",
+        # Slider Stats
+        "Sliders", "SliderAvgVelo", "SliderMaxVelo", "SliderMinVelo", "SliderAvgIVB",
+        "SliderMaxIVB", "SliderMinIVB", "SliderAvgHB", "SliderMaxHB", "SliderMinHB",
+        "SliderAvgSpin", "SliderMaxSpin", "SliderMinSpin", "SliderInZone", "SliderInZone%",
+        "SliderAvgReleaseHeight", "SliderAvgExtension",
+        # Batting Stats
+        "PA", "AB", "H", "TB", "1B", "2B", "3B", "HR", "RBI", "BB", "K", "HBP",
+        "SF", "SH", "GDP", "AVG", "BB%", "K%", "OBP", "SLG", "OPS", "ISO", "BABIP", "wOBA",
+        "AvgExitVelocity", "AvgLaunchAngle"
+    ]
+
+    # Write the data to the CSV file
+    with open(output_file, mode='w', newline='') as file:
+        writer = csv.DictWriter(file, fieldnames=headers)
+        writer.writeheader()  # Write the header row
+
+        for player_name, stats in players.items():
+            row = {"PlayerName": player_name}
+
+            # Add pitching stats
+            pitching_stats = stats["PitchingStats"]
+            row.update({
+                "W-L": f"{pitching_stats.get('Wins', 0)}-{pitching_stats.get('Losses', 0)}",
+                "EarnedRuns": pitching_stats.get("EarnedRuns", 0),
+                "InningsPitched": pitching_stats.get("InningsPitched", 0),
+                "TBF": pitching_stats.get("TotalBattersFaced", 0),
+                "ERA": pitching_stats.get("ERA", 0),
+                "TotalPitches": pitching_stats.get("TotalPitches", 0),
+                "Strikes": pitching_stats.get("Strikes", 0),
+                "Balls": pitching_stats.get("Balls", 0),
+                "FoulsAfter2Strikes": pitching_stats.get("FoulsAfter2Strikes", 0),
+                "HitBatters": pitching_stats.get("HitBatters", 0),
+                "Strike%": pitching_stats.get("Strike%", 0),
+                "Ball%": pitching_stats.get("Ball%", 0),
+                "FirstPitchStrikes": pitching_stats.get("FirstPitchStrikes", 0),
+                "FirstPitchBalls": pitching_stats.get("FirstPitchBalls", 0),
+                "FirstPitchStrike%": pitching_stats.get("FirstPitchStrike%", 0),
+                "FirstPitchBall%": pitching_stats.get("FirstPitchBall%", 0),
+                "First2of3StrikesOrInPlay": pitching_stats.get("First2of3StrikesOrInPlay", 0),
+                "AtBatEfficiency": pitching_stats.get("AtBatEfficiency", 0),
+                "AtBatEfficiency%": pitching_stats.get("AtBatEfficiency%", 0),
+                "Strikeouts": pitching_stats.get("Strikeouts", 0),
+                "Walks": pitching_stats.get("Walks", 0),
+                "HomeRuns": pitching_stats.get("HomeRuns", 0),
+                "Strikeout%": pitching_stats.get("Strikeout%", 0),
+                "Walk%": pitching_stats.get("Walk%", 0),
+                "FIP": pitching_stats.get("FIP", 0),
+                "Swings": pitching_stats.get("Swings", 0),
+                "Whiffs": pitching_stats.get("Whiffs", 0),
+                "Whiff%": pitching_stats.get("Whiff%", 0),
+                "CalledStrikes": pitching_stats.get("CalledStrikes", 0),
+                "CSW%": pitching_stats.get("CSW%", 0),
+                "InZoneSwings": pitching_stats.get("IZSwings", 0),
+                "InZoneWhiffs": pitching_stats.get("IZWhiffs", 0),
+                "IZWhiff%": pitching_stats.get("IZWhiff%", 0),
+                "OutZoneSwings": pitching_stats.get("OZSwings", 0),
+                "OutZonePitches": pitching_stats.get("OZPitches", 0),
+                "Chase%": pitching_stats.get("Chase%", 0),
+                "FBnVAA": pitching_stats.get("FBnVAA", 0),
+                "FBVAAUpper": pitching_stats.get("FBVAAUpper", 0),
+                "FBVAAMid": pitching_stats.get("FBVAAMid", 0),
+                "FBVAALower": pitching_stats.get("FBVAALower", 0),
+                "Fastballs": pitching_stats.get("Fastballs", 0),
+                "FastballAvgVelo": pitching_stats.get("FastballAvgVelo", 0),
+                "FastballMaxVelo": pitching_stats.get("FastballMaxVelo", 0),
+                "FastballMinVelo": pitching_stats.get("FastballMinVelo", 0),
+                "FastballAvgIVB": pitching_stats.get("FastballAvgIVB", 0),
+                "FastballMaxIVB": pitching_stats.get("FastballMaxIVB", 0),
+                "FastballMinIVB": pitching_stats.get("FastballMinIVB", 0),
+                "FastballAvgHB": pitching_stats.get("FastballAvgHB", 0),
+                "FastballMaxHB": pitching_stats.get("FastballMaxHB", 0),
+                "FastballMinHB": pitching_stats.get("FastballMinHB", 0),
+                "FastballAvgSpin": pitching_stats.get("FastballAvgSpin", 0),
+                "FastballMaxSpin": pitching_stats.get("FastballMaxSpin", 0),
+                "FastballMinSpin": pitching_stats.get("FastballMinSpin", 0),
+                "FastballInZone": pitching_stats.get("FastballIZ", 0),
+                "FastballInZone%": pitching_stats.get("FastballIZ%", 0),
+                "FastballAvgReleaseHeight": pitching_stats.get("FastballAvgReleaseHeight", 0),
+                "FastballAvgExtension": pitching_stats.get("FastballAvgExtension", 0),
+                "Cutters": pitching_stats.get("Cutters", 0),
+                "CutterAvgVelo": pitching_stats.get("CutterAvgVelo", 0),
+                "CutterMaxVelo": pitching_stats.get("CutterMaxVelo", 0),
+                "CutterMinVelo": pitching_stats.get("CutterMinVelo", 0),
+                "CutterAvgIVB": pitching_stats.get("CutterAvgIVB", 0),
+                "CutterMaxIVB": pitching_stats.get("CutterMaxIVB", 0),
+                "CutterMinIVB": pitching_stats.get("CutterMinIVB", 0),
+                "CutterAvgHB": pitching_stats.get("CutterAvgHB", 0),
+                "CutterMaxHB": pitching_stats.get("CutterMaxHB", 0),
+                "CutterMinHB": pitching_stats.get("CutterMinHB", 0),
+                "CutterAvgSpin": pitching_stats.get("CutterAvgSpin", 0),
+                "CutterMaxSpin": pitching_stats.get("CutterMaxSpin", 0),
+                "CutterMinSpin": pitching_stats.get("CutterMinSpin", 0),
+                "CutterInZone": pitching_stats.get("CutterIZ", 0),
+                "CutterInZone%": pitching_stats.get("CutterIZ%", 0),
+                "CutterAvgReleaseHeight": pitching_stats.get("CutterAvgReleaseHeight", 0),
+                "CutterAvgExtension": pitching_stats.get("CutterAvgExtension", 0),
+                "Sinkers": pitching_stats.get("Sinkers", 0),
+                "SinkerAvgVelo": pitching_stats.get("SinkerAvgVelo", 0),
+                "SinkerMaxVelo": pitching_stats.get("SinkerMaxVelo", 0),
+                "SinkerMinVelo": pitching_stats.get("SinkerMinVelo", 0),
+                "SinkerAvgIVB": pitching_stats.get("SinkerAvgIVB", 0),
+                "SinkerMaxIVB": pitching_stats.get("SinkerMaxIVB", 0),
+                "SinkerMinIVB": pitching_stats.get("SinkerMinIVB", 0),
+                "SinkerAvgHB": pitching_stats.get("SinkerAvgHB", 0),
+                "SinkerMaxHB": pitching_stats.get("SinkerMaxHB", 0),
+                "SinkerMinHB": pitching_stats.get("SinkerMinHB", 0),
+                "SinkerAvgSpin": pitching_stats.get("SinkerAvgSpin", 0),
+                "SinkerMaxSpin": pitching_stats.get("SinkerMaxSpin", 0),
+                "SinkerMinSpin": pitching_stats.get("SinkerMinSpin", 0),
+                "SinkerInZone": pitching_stats.get("SinkerIZ", 0),
+                "SinkerInZone%": pitching_stats.get("SinkerIZ%", 0),
+                "SinkerAvgReleaseHeight": pitching_stats.get("SinkerAvgReleaseHeight", 0),
+                "SinkerAvgExtension": pitching_stats.get("SinkerAvgExtension", 0),
+                "Sliders": pitching_stats.get("Sliders", 0),
+                "SliderAvgVelo": pitching_stats.get("SliderAvgVelo", 0),
+                "SliderMaxVelo": pitching_stats.get("SliderMaxVelo", 0),
+                "SliderMinVelo": pitching_stats.get("SliderMinVelo", 0),
+                "SliderAvgIVB": pitching_stats.get("SliderAvgIVB", 0),
+                "SliderMaxIVB": pitching_stats.get("SliderMaxIVB", 0),
+                "SliderMinIVB": pitching_stats.get("SliderMinIVB", 0),
+                "SliderAvgHB": pitching_stats.get("SliderAvgHB", 0),
+                "SliderMaxHB": pitching_stats.get("SliderMaxHB", 0),
+                "SliderMinHB": pitching_stats.get("SliderMinHB", 0),
+                "SliderAvgSpin": pitching_stats.get("SliderAvgSpin", 0),
+                "SliderMaxSpin": pitching_stats.get("SliderMaxSpin", 0),
+                "SliderMinSpin": pitching_stats.get("SliderMinSpin", 0),
+                "SliderInZone": pitching_stats.get("SliderIZ", 0),
+                "SliderInZone%": pitching_stats.get("SliderIZ%", 0),
+                "SliderAvgReleaseHeight": pitching_stats.get("SliderAvgReleaseHeight", 0),
+                "SliderAvgExtension": pitching_stats.get("SliderAvgExtension", 0),
+            })
+
+            # Add batting stats
+            batting_stats = stats["BattingStats"]
+            row.update({
+                "PA": batting_stats.get("PA", 0),
+                "AB": batting_stats.get("AB", 0),
+                "H": batting_stats.get("H", 0),
+                "TB": batting_stats.get("TB", 0),
+                "1B": batting_stats.get("1B", 0),
+                "2B": batting_stats.get("2B", 0),
+                "3B": batting_stats.get("3B", 0),
+                "HR": batting_stats.get("HR", 0),
+                "RBI": batting_stats.get("RBI", 0),
+                "BB": batting_stats.get("BB", 0),
+                "K": batting_stats.get("K", 0),
+                "HBP": batting_stats.get("HBP", 0),
+                "SF": batting_stats.get("SF", 0),
+                "SH": batting_stats.get("SH", 0),
+                "GDP": batting_stats.get("GDP", 0),
+                "AVG": batting_stats.get("AVG", 0),
+                "BB%": batting_stats.get("BB%", 0),
+                "K%": batting_stats.get("K%", 0),
+                "OBP": batting_stats.get("OBP", 0),
+                "SLG": batting_stats.get("SLG", 0),
+                "OPS": batting_stats.get("OPS", 0),
+                "ISO": batting_stats.get("ISO", 0),
+                "BABIP": batting_stats.get("BABIP", 0),
+                "wOBA": batting_stats.get("wOBA", 0),
+                "AvgExitVelocity": batting_stats.get("AvgExitVelocity", 0),
+                "AvgLaunchAngle": batting_stats.get("AvgLaunchAngle", 0),
+            })
+
+            writer.writerow(row)
+
+    print(f"CSV file '{output_file}' generated successfully!")
 # -------------------- MAIN FUNCTION -------------------- #
 if __name__ == "__main__":
     file_path = input("Enter the path to the CSV file: ")
@@ -1219,6 +1437,10 @@ if __name__ == "__main__":
         print()
         print("File found successfully! Opening now...")
         print()
+
+        # Extract GameID from first row of dataset
+        game_id = data[0]['GameID'] if 'GameID' in data[0] else "unknown_game"
+        output_file = f"{game_id}_player_stats_SIMPLIFIED.csv" # Use GameID to name output file
 
         # ----- PITCHING STATS ----- #
 
@@ -1246,6 +1468,9 @@ if __name__ == "__main__":
         # Print hitting stats
         print_hitting_stats(players)
 
+        # ----- GENERATE CSV ----- #
+        generate_csv(players, output_file)
+        
     else:
         print("Failed to read the CSV file.")
     
