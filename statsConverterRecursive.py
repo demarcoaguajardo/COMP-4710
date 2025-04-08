@@ -401,6 +401,15 @@ def write_stats_to_csv(batters, output_file):
             team_name = team_names.get(cleaned_stats['Team'], cleaned_stats['Team'])
             writer.writerow({'Player': batter, 'Team': team_name, **cleaned_stats})
 
+# Function to check if file contains AUB_PRC as a pitching team
+def contains_aub_prc(data):
+    for row in data:
+        pitcher_team = row.get('PitcherTeam', '')
+        batter_team = row.get('BatterTeam', '')
+        if pitcher_team == 'AUB_PRC' or batter_team == 'AUB_PRC':
+            return True
+    return False
+
 if __name__ == "__main__":
     directory_path = input("Enter the directory path: ")
     output_file = input("Enter the output CSV file path: ")

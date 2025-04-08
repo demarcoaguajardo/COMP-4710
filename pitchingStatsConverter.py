@@ -516,7 +516,7 @@ def calculate_pitching_stats(data):
         else:
             pitchers[pitcher]['FBnVAA'] = 0
 
-        # Calculate FB VAA for different strike zone parts (using mean bc not normalized))
+        # Calculate FB VAA for different strike zone parts (using mean bc not normalized)
         if fastball_upper_zone_angles[pitcher]:
             pitchers[pitcher]['FBVAAUpper'] = statistics.mean(fastball_upper_zone_angles[pitcher])
         else: 
@@ -529,6 +529,7 @@ def calculate_pitching_stats(data):
             pitchers[pitcher]['FBVAALower'] = statistics.mean(fastball_lower_zone_angles[pitcher])
         else:
             pitchers[pitcher]['FBVAALower'] = 0
+
         # Debugging prints for vertical approach angles in each zone
         # print(f"Pitcher: {pitcher}")
         # print(f"Upper Zone Pitches: {pitchers[pitcher]['UpperZonePitches']}, Mid Zone Pitches: {pitchers[pitcher]['MidZonePitches']}, Lower Zone Pitches: {pitchers[pitcher]['LowerZonePitches']}")
