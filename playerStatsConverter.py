@@ -1234,9 +1234,10 @@ def print_hitting_stats(players):
         print()
 
 # Function that generates a CSV file with the players' stats
-def generate_csv(players, output_file):
+def generate_csv(players, output_file, game_id):
     # Define specific headers for pitching and batting stats
     headers = [
+        "GameID", # Game ID
         "PlayerName",  # Player's name
         # Pitching Stats
         "W-L", "EarnedRuns", "InningsPitched", "TBF", "ERA", "TotalPitches",
@@ -1278,7 +1279,7 @@ def generate_csv(players, output_file):
         writer.writeheader()  # Write the header row
 
         for player_name, stats in players.items():
-            row = {"PlayerName": player_name}
+            row = {"GameID": game_id, "PlayerName": player_name}
 
             # Add pitching stats
             pitching_stats = stats["PitchingStats"]
@@ -1469,7 +1470,7 @@ if __name__ == "__main__":
         print_hitting_stats(players)
 
         # ----- GENERATE CSV ----- #
-        generate_csv(players, output_file)
+        generate_csv(players, output_file, game_id)
         
     else:
         print("Failed to read the CSV file.")
