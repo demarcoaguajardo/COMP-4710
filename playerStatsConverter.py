@@ -552,7 +552,7 @@ def calculate_pitching_stats(data, players):
             pitching_stats['FIP'] = 0
 
         # Calculate FB nVAA (using the median, because normalizing makes the mean less useful)
-        if pitching_stats['FBVertApprAngles']:
+        if len(pitching_stats['FBVertApprAngles']) >= 2: # Ensure at least two data points
             mean_vert_appr_angle = statistics.mean(pitching_stats['FBVertApprAngles'])
             stddev_vert_appr_angle = statistics.stdev(pitching_stats['FBVertApprAngles'])
             normalized_angles = [(angle - mean_vert_appr_angle) / stddev_vert_appr_angle
