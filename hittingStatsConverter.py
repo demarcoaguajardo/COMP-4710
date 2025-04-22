@@ -33,6 +33,12 @@ def read_csv(file_path):
     except FileNotFoundError:
         print(f"File not found: {file_path}")
         return None
+    
+def safe_float(value):
+    try:
+        return float(value) if value.strip() else 0.0
+    except (ValueError, AttributeError):
+        return 0.0
 
 def calculate_hitting_stats(data):
     batters = defaultdict(lambda: defaultdict(int))

@@ -41,6 +41,12 @@ def read_csv(file_path):
     except FileNotFoundError:
         print(f"File not found: {file_path}")
         return None
+    
+def safe_float(value):
+    try:
+        return float(value) if value.strip() else 0.0
+    except (ValueError, AttributeError):
+        return 0.0
 
 def calculate_pitching_stats(data):
     pitchers = defaultdict(lambda: defaultdict(int)) # Dictionary of pitchers and their stats
@@ -72,20 +78,20 @@ def calculate_pitching_stats(data):
         balls = int(row['Balls']) if 'Balls' in row else 0
         tagged_hit_type = row['TaggedHitType']
         play_result = row['PlayResult']
-        plate_loc_side = float(row['PlateLocSide']) if 'PlateLocSide' in row else 0
-        plate_loc_height = float (row['PlateLocHeight']) if 'PlateLocHeight' in row else 0
+        plate_loc_side = safe_float(row['PlateLocSide']) if 'PlateLocSide' in row else 0
+        plate_loc_height = safe_float (row['PlateLocHeight']) if 'PlateLocHeight' in row else 0
         tagged_pitch_type = row['TaggedPitchType']
-        vert_appr_angle = float(row['VertApprAngle']) if 'VertApprAngle' in row else 0
-        rel_speed = float(row['RelSpeed']) if 'RelSpeed' in row else 0
-        induced_vert_break = float(row['InducedVertBreak']) if 'InducedVertBreak' in row else 0
-        horz_break = float(row['HorzBreak']) if 'HorzBreak' in row else 0
+        vert_appr_angle = safe_float(row['VertApprAngle']) if 'VertApprAngle' in row else 0
+        rel_speed = safe_float(row['RelSpeed']) if 'RelSpeed' in row else 0
+        induced_vert_break = safe_float(row['InducedVertBreak']) if 'InducedVertBreak' in row else 0
+        horz_break = safe_float(row['HorzBreak']) if 'HorzBreak' in row else 0
         try: # Had to make try/except block because some spin rates were empty strings
-            spin_rate = float(row['SpinRate']) if 'SpinRate' in row and row['SpinRate'].strip() else 0
+            spin_rate = safe_float(row['SpinRate']) if 'SpinRate' in row and row['SpinRate'].strip() else 0
         except ValueError:
             print(f"Invalid SpinRate value: {row['SpinRate']} in row: {row}")
             spin_rate = 0
-        release_height = float(row['RelHeight']) if 'RelHeight' in row else 0
-        extension = float(row['Extension']) if 'Extension' in row else 0
+        release_height = safe_float(row['RelHeight']) if 'RelHeight' in row else 0
+        extension = safe_float(row['Extension']) if 'Extension' in row else 0
 
         # pitch_location_confidence = row['PitchLocationConfidence'] if 'PitchLocationConfidence' in row else 0
 
@@ -498,7 +504,7 @@ def calculate_pitching_stats(data):
             pitchers[pitcher]['FIP'] = 0
 
         #Calculate FB nVAA (using the median, because normalizing makes the mean less useful)
-        if fastball_vert_appr_anngles[pitcher]:
+        if len(fastball_vert_appr_anngles[pitcher]) >= 2:
             mean_vert_appr_angle = statistics.mean(fastball_vert_appr_anngles[pitcher])
             stddev_vert_appr_angle = statistics.stdev(fastball_vert_appr_anngles[pitcher])
             normalized_angles = [(angle - mean_vert_appr_angle) / stddev_vert_appr_angle
