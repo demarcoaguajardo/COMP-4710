@@ -252,6 +252,12 @@ def read_csv_directory(directory_path):
 
     return all_data
 
+def safe_float(value):
+    try:
+        return float(value) if value.strip() else 0.0
+    except (ValueError, AttributeError):
+        return 0.0
+
 # Function to calculate batter statistics
 def calculate_hitting_stats(data):
     batters = defaultdict(lambda: defaultdict(int))
@@ -273,12 +279,12 @@ def calculate_hitting_stats(data):
         pa_of_inning = row.get('paofinning', '').strip()
 
         try:
-            exit_speed = float(row.get('exitspeed', '0'))
+            exit_speed = safe_float(row.get('exitspeed', '0'))
         except ValueError:
             exit_speed = 0
 
         try:
-            launch_angle = float(row.get('angle', '0'))
+            launch_angle = safe_float(row.get('angle', '0'))
         except ValueError:
             launch_angle = 0
 
@@ -393,9 +399,9 @@ def write_stats_to_csv(batters, output_file):
 
             # Add "%" to BB% and K%
             if 'BB%' in cleaned_stats:
-                cleaned_stats['BB%'] = f"{float(cleaned_stats['BB%']):.2f}%"
+                cleaned_stats['BB%'] = f"{safe_float(cleaned_stats['BB%']):.2f}%"
             if 'K%' in cleaned_stats:
-                cleaned_stats['K%'] = f"{float(cleaned_stats['K%']):.2f}%"
+                cleaned_stats['K%'] = f"{safe_float(cleaned_stats['K%']):.2f}%"
 
             #Retrieve team name for each player, fallback to team code if team not in dictionary
             team_name = team_names.get(cleaned_stats['Team'], cleaned_stats['Team'])
