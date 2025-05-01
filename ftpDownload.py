@@ -137,8 +137,8 @@ def main():
     # Server Information
     # Provided by Everett Teaford, also in documentation
     HOSTNAME = "ftp.trackmanbaseball.com"
-    USERNAME = "Auburn"
-    PASSWORD = "kA#R2,KNAP"
+    USERNAME =
+    PASSWORD =
 
     #check_ftp_connection(HOSTNAME, USERNAME, PASSWORD)
     #download_file(HOSTNAME, USERNAME, PASSWORD)
